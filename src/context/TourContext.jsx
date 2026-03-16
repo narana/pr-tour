@@ -11,6 +11,7 @@ const initialState = {
   triggeredPOIs: [],          // IDs of POIs whose alert has been triggered this session
   activePOI: null,            // Currently displayed POI object (for alert overlay)
   currentSegment: 1,
+  currentStepIndex: 0,
   elapsedSeconds: 0,
   startTime: null,
   pauseStartTime: null,
@@ -34,6 +35,7 @@ function tourReducer(state, action) {
         triggeredPOIs: [],
         elapsedSeconds: 0,
         currentSegment: 1,
+        currentStepIndex: 0,
       };
 
     case 'UPDATE_POSITION':
@@ -82,6 +84,9 @@ function tourReducer(state, action) {
     case 'UPDATE_SEGMENT':
       return { ...state, currentSegment: action.payload };
 
+    case 'UPDATE_CURRENT_STEP':
+      return { ...state, currentStepIndex: action.payload };
+
     case 'COMPLETE_TOUR':
       return { ...state, screen: 'complete', isPaused: false, activePOI: null };
 
@@ -108,7 +113,14 @@ export function TourProvider({ children }) {
     if (state.screen === 'active') {
       saveTourState(state);
     }
-  }, [state.visitedPOIs, state.triggeredPOIs, state.isPaused, state.currentSegment, state.screen]);
+  }, [
+    state.visitedPOIs,
+    state.triggeredPOIs,
+    state.isPaused,
+    state.currentSegment,
+    state.currentStepIndex,
+    state.screen,
+  ]);
 
   // Elapsed time ticker
   useEffect(() => {

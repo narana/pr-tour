@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react';
 import { useTour } from '../context/TourContext';
 import useGeolocation from '../hooks/useGeolocation';
 import useProximity from '../hooks/useProximity';
+import useTurnByTurn from '../hooks/useTurnByTurn';
 import TourMap from './TourMap';
 import POIAlert from './POIAlert';
 import PauseScreen from './PauseScreen';
@@ -22,6 +23,14 @@ export default function Navigation() {
 
   // Proximity detection — monitors position against POI geofences
   useProximity(position);
+
+  const { nextStep, formatStepDistance, summary } = useTurnByTurn({
+    position,
+    volumeOn: state.volumeOn,
+    isPaused: state.isPaused,
+    currentStepIndex: state.currentStepIndex,
+    onStepChange: (stepIndex) => dispatch({ type: 'UPDATE_CURRENT_STEP', payload: stepIndex }),
+  });
 
   // Check for tour completion: user returned near San Juan start after visiting at least half the POIs
   useEffect(() => {
@@ -66,8 +75,15 @@ export default function Navigation() {
       <div className="navigation__top-bar">
         {nextPOI ? (
           <>
-            <div className="navigation__next-turn">Next stop</div>
-            <div className="navigation__turn-instruction">{nextPOI.name}</div>
+            <div className="navigation__next-turn">
+              {nextStep ? `Next maneuver${formatStepDistance ? ` • ${formatStepDistance}` : ''}` : 'Next stop'}
+            </div>
+            <div className="navigation__turn-instruction">
+              {nextStep?.instruction || nextPOI.name}
+            </div>
+            {nextStep?.roadName && nextStep.roadName !== 'the road' && (
+              <div className="navigation__turn-detail">Road: {nextStep.roadName}</div>
+            )}
           </>
         ) : (
           <>
@@ -112,6 +128,13 @@ export default function Navigation() {
           </div>
           <span>~{formatDuration(remainingSeconds > 0 ? remainingSeconds : 0)} left</span>
         </div>
+
+        {summary && (
+          <div className="navigation__route-summary">
+            <span>{Math.round(summary.distanceMeters / 1000)} km route</span>
+            <span>{summary.stepCount} maneuvers stored locally</span>
+          </div>
+        )}
 
         <div className="navigation__controls">
           {state.isPaused ? (

@@ -2,6 +2,7 @@ import { useEffect, useRef } from 'react';
 import L from 'leaflet';
 import 'leaflet/dist/leaflet.css';
 import pois, { routeWaypoints } from '../data/pois';
+import routeData from '../data/routeData.json';
 
 // Fix default marker icon path issue with bundlers
 import markerIcon2x from 'leaflet/dist/images/marker-icon-2x.png';
@@ -72,7 +73,9 @@ export default function TourMap({ userPosition, interactive = true, showRoute = 
 
     // Draw route polyline from waypoints
     if (showRoute) {
-      const routeLatLngs = routeWaypoints.map((w) => [w.lat, w.lng]);
+      const routeLatLngs = (routeData.geometry?.length
+        ? routeData.geometry.map((point) => [point.lat, point.lng])
+        : routeWaypoints.map((w) => [w.lat, w.lng]));
       L.polyline(routeLatLngs, {
         color: '#1a5632',
         weight: 4,

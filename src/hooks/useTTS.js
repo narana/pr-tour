@@ -11,21 +11,33 @@ import { useCallback, useRef, useEffect } from 'react';
  */
 export default function useTTS() {
   const utteranceRef = useRef(null);
-  const isSupportedRef = useRef(typeof window !== 'undefined' && 'speechSynthesis' in window);
+  const audioRef = useRef(typeof Audio !== 'undefined' ? new Audio() : null);
+  const isSpeechSupportedRef = useRef(typeof window !== 'undefined' && 'speechSynthesis' in window);
+  const isSupportedRef = useRef(Boolean(audioRef.current) || isSpeechSupportedRef.current);
+
+  const stop = useCallback(() => {
+    if (audioRef.current) {
+      audioRef.current.pause();
+      audioRef.current.currentTime = 0;
+      audioRef.current.onended = null;
+      audioRef.current.onerror = null;
+    }
+
+    if (isSpeechSupportedRef.current) {
+      window.speechSynthesis.cancel();
+    }
+  }, []);
 
   // Cancel speech on unmount
   useEffect(() => {
     return () => {
-      if (isSupportedRef.current) {
-        window.speechSynthesis.cancel();
-      }
+      stop();
     };
-  }, []);
+  }, [stop]);
 
-  const speak = useCallback((text, { rate = 0.95, lang = 'en-US', onEnd } = {}) => {
-    if (!isSupportedRef.current || !text) return;
+  const speakWithSpeechSynthesis = useCallback((text, { rate = 0.95, lang = 'en-US', onEnd } = {}) => {
+    if (!isSpeechSupportedRef.current || !text) return false;
 
-    // Cancel any ongoing narration
     window.speechSynthesis.cancel();
 
     const utterance = new SpeechSynthesisUtterance(text);
@@ -33,10 +45,9 @@ export default function useTTS() {
     utterance.lang = lang;
     utterance.pitch = 1;
 
-    // Try to pick a natural-sounding voice
     const voices = window.speechSynthesis.getVoices();
     const preferredVoice = voices.find(
-      (v) => v.lang.startsWith(lang.slice(0, 2)) && v.localService
+      (voice) => voice.lang.startsWith(lang.slice(0, 2)) && voice.localService
     );
     if (preferredVoice) {
       utterance.voice = preferredVoice;
@@ -48,17 +59,36 @@ export default function useTTS() {
 
     utteranceRef.current = utterance;
     window.speechSynthesis.speak(utterance);
+    return true;
   }, []);
 
-  const stop = useCallback(() => {
-    if (isSupportedRef.current) {
-      window.speechSynthesis.cancel();
+  const speak = useCallback((text, { audioSrc, rate = 0.95, lang = 'en-US', onEnd } = {}) => {
+    if (!isSupportedRef.current || !text) return;
+
+    stop();
+
+    if (audioSrc && audioRef.current) {
+      audioRef.current.src = audioSrc;
+      audioRef.current.playbackRate = 1;
+      audioRef.current.onended = onEnd || null;
+      audioRef.current.onerror = () => {
+        speakWithSpeechSynthesis(text, { rate, lang, onEnd });
+      };
+
+      audioRef.current.play().catch(() => {
+        speakWithSpeechSynthesis(text, { rate, lang, onEnd });
+      });
+      return;
     }
-  }, []);
+
+    speakWithSpeechSynthesis(text, { rate, lang, onEnd });
+  }, [speakWithSpeechSynthesis, stop]);
 
   const isSpeaking = useCallback(() => {
     if (!isSupportedRef.current) return false;
-    return window.speechSynthesis.speaking;
+
+    const audioPlaying = Boolean(audioRef.current && !audioRef.current.paused && !audioRef.current.ended);
+    return audioPlaying || (isSpeechSupportedRef.current && window.speechSynthesis.speaking);
   }, []);
 
   return { speak, stop, isSpeaking, isSupported: isSupportedRef.current };

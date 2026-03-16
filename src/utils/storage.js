@@ -11,6 +11,7 @@ export function saveTourState(state) {
       visitedPOIs: state.visitedPOIs,
       triggeredPOIs: state.triggeredPOIs,
       currentSegment: state.currentSegment,
+      currentStepIndex: state.currentStepIndex,
       elapsedSeconds: state.elapsedSeconds,
       startTime: state.startTime,
       pauseStartTime: state.pauseStartTime,

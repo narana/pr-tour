@@ -23,6 +23,7 @@ export default function ReplayDrawer({ open, onClose }) {
     stop();
     setPlayingId(poi.id);
     speak(text, {
+      audioSrc: poi.audio?.en,
       onEnd: () => setPlayingId(null),
     });
   };
