@@ -14,6 +14,7 @@ export default function POIAlert() {
   const handlePlayNarration = () => {
     if (!state.volumeOn || !isSupported) return;
     speak(narrationText, {
+      audioSrc: poi.audio?.en,
       onEnd: () => dispatch({ type: 'SET_NARRATION_PLAYING', payload: false }),
     });
     dispatch({ type: 'SET_NARRATION_PLAYING', payload: true });
@@ -40,6 +41,7 @@ export default function POIAlert() {
   React.useEffect(() => {
     if (poi && state.volumeOn && isSupported) {
       speak(narrationText, {
+        audioSrc: poi.audio?.en,
         onEnd: () => dispatch({ type: 'SET_NARRATION_PLAYING', payload: false }),
       });
     }

@@ -72,6 +72,7 @@ export default function PreTour() {
 
         <p className="pre-tour__disclaimer">
           For your safety, audio narration will guide you hands-free.
+          Turn-by-turn directions and narration are bundled locally for low-connectivity stretches.
           Do not interact with the screen while driving.
           A passenger is recommended to manage the device.
         </p>

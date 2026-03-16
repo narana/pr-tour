@@ -1,111 +1,154 @@
-/**
- * Points of Interest data for the Puerto Rico Heritage & Nature Tour.
- *
- * FOLLOW-UP: All GPS coordinates are approximate and must be verified
- * on-site before production release (PRD §12 Q1).
- *
- * FOLLOW-UP: Narration scripts below are placeholder AI-generated text.
- * Per PRD §6.2, scripts should be regenerated via the AI prompt template
- * and reviewed by a human editor for factual accuracy before final TTS synthesis.
- */
-
 const pois = [
   {
-    id: 'old-san-juan',
-    name: 'Old San Juan — Castillo San Felipe del Morro',
+    id: 'old-san-juan-el-morro',
+    name: 'Castillo San Felipe del Morro',
     municipality: 'San Juan',
-    type: 'Historical / Military',
-    coordinates: { lat: 18.4706, lng: -66.1240 },
-    triggerRadiusMeters: 600,
+    type: 'Historical / Fortress',
+    secondary: false,
+    coordinates: { lat: 18.4708427, lng: -66.1242276 },
+    triggerRadiusMeters: 500,
     mandatory: false,
     pausePrompt: false,
     segment: 1,
     estimatedStopMinutes: 20,
     narration: {
-      en: `Coming up on your left, rising from the rocky headland like a sentinel watching over San Juan Bay, is Castillo San Felipe del Morro — one of the most iconic fortifications in the Americas. Construction began in 1539, just decades after the Spanish first arrived on this island, and it took over 200 years to complete the massive six-level structure you see today.
+      en: `On the western edge of Old San Juan, Castillo San Felipe del Morro stands above the entrance to San Juan Bay like a stone gatekeeper. Construction began in 1539, and over the next two centuries the Spanish crown expanded it into the six-level fortress seen today. Its position mattered as much as its walls: any ship hoping to enter the harbor had to pass directly under its guns.
 
-El Morro, as locals call it, was designed to guard the entrance to San Juan Harbor from seaborne attacks. And it saw plenty of action — the fortress withstood assaults by Sir Francis Drake in 1595, the Dutch in 1625, and even a bombardment by the United States Navy in 1898 during the Spanish-American War. Those cannon-scarred walls have stories etched into every stone.
+El Morro survived some of the best-known attacks in Puerto Rico's colonial history, including the assaults of Francis Drake in 1595, George Clifford in 1598, the Dutch in 1625, and the British expedition led by Ralph Abercromby in 1797. Even in 1898, during the Spanish-American War, the fort remained part of San Juan's defenses. What looks timeless from the road is really a record of repeated adaptation.
 
-Here's something most visitors don't realize: the wide grassy field stretching in front of the fort, the esplanade, was intentionally kept clear of buildings. It wasn't a park — it was a killing ground, designed to give defenders an unobstructed line of fire at anyone approaching. Today, that same field is where families fly kites on Sunday afternoons. It's one of the most striking transformations of military space into community joy you'll find anywhere.
-
-El Morro is a UNESCO World Heritage Site and a cornerstone of Puerto Rican identity. For many boricuas, it represents resilience — a structure that endured centuries of conflict and still stands proud. It's a fitting start to our journey through the island's heritage.`,
+The broad lawn in front of the fortress, now filled with kites and families, once functioned as a military field of fire. That contrast captures something essential about Puerto Rico: spaces built for empire have been repurposed into places of memory, leisure, and local identity. El Morro is not just a monument to Spanish engineering. It is one of the clearest physical links between the island's colonial past and its modern civic life.`,
     },
     summary: {
-      en: 'A UNESCO World Heritage fortress begun in 1539, guarding San Juan Harbor for over 400 years. One of the most iconic Spanish colonial military structures in the Americas.',
+      en: 'The best-known fort in Puerto Rico, begun in 1539 to defend San Juan Bay and later recognized as part of a UNESCO World Heritage Site.',
+    },
+    audio: {
+      en: '/audio/en/pois/old-san-juan-el-morro.mp3',
+    },
+  },
+  {
+    id: 'plaza-del-quinto-centenario',
+    name: 'Plaza del Quinto Centenario',
+    municipality: 'San Juan',
+    type: 'Historical / Public Plaza',
+    secondary: true,
+    coordinates: { lat: 18.4679206, lng: -66.1190706 },
+    triggerRadiusMeters: 300,
+    mandatory: false,
+    pausePrompt: false,
+    segment: 1,
+    estimatedStopMinutes: 10,
+    narration: {
+      en: `Just inland from El Morro is Plaza del Quinto Centenario, a modern public square built in 1992 to mark five hundred years since Columbus's first voyage. The plaza is a useful reminder that Old San Juan is not frozen in the sixteenth century. It is a historic district that continues to reinterpret its own story in public space.
+
+From here you can read the layers of the walled city in one glance: barracks, ramparts, plazas, and the dense urban fabric that grew around military priorities. Even though the plaza itself is modern, it sits within one of the most historically concentrated landscapes in the Caribbean. It works less as a single attraction than as an overlook on the civic and defensive plan of Old San Juan.`,
+    },
+    summary: {
+      en: 'A 1992 plaza beside El Morro that frames the old military heart of San Juan and helps connect the historic district to the present day.',
+    },
+    audio: {
+      en: '/audio/en/pois/plaza-del-quinto-centenario.mp3',
     },
   },
   {
     id: 'caguas-botanical-garden',
-    name: 'Jardín Botánico y Cultural de Caguas',
+    name: 'Jardín Botánico y Cultural de Caguas William Miranda Marín',
     municipality: 'Caguas',
-    type: 'Natural / Cultural',
-    coordinates: { lat: 18.2352, lng: -66.0378 },
+    type: 'Natural / Cultural Garden',
+    secondary: false,
+    coordinates: { lat: 18.2395442, lng: -66.0622302 },
     triggerRadiusMeters: 500,
     mandatory: false,
     pausePrompt: false,
     segment: 2,
-    estimatedStopMinutes: 15,
+    estimatedStopMinutes: 20,
     narration: {
-      en: `As we enter the Caguas valley, you're passing near the Jardín Botánico y Cultural de Caguas — the Botanical and Cultural Garden of Caguas. What makes this place remarkable isn't just the tropical flora — it's the story of transformation beneath your feet.
+      en: `As the route bends into the Caguas valley, you pass near the Jardín Botánico y Cultural de Caguas William Miranda Marín. The site brings together native vegetation, cultural interpretation, and the valley's long agricultural story in one landscape. It is a useful midpoint between the colonial coast and the mountain interior ahead.
 
-This land was once an industrial zone, part of the sugar cane processing infrastructure that dominated Puerto Rico's economy for centuries. When that industry declined, the city of Caguas made a bold choice: instead of letting it decay, they reclaimed it. The result is a lush green sanctuary that weaves together native plant species, walking trails, and a Taíno heritage garden that honors the indigenous people who first cultivated this valley over a thousand years ago.
+What gives the garden its particular character is the way it ties plant life to identity. Caguas is named for a Taíno leader, and the garden includes areas that interpret indigenous cultivation traditions alongside later layers of Puerto Rican history. Rather than presenting nature and culture as separate, the site treats the valley as a lived environment shaped by farming, settlement, and memory.
 
-The Taíno garden section is particularly special. It showcases the crops and medicinal plants the Taíno people relied on — yuca, sweet potato, tobacco, and cotton — alongside petroglyphs and reconstructed ceremonial spaces. Caguas itself takes its name from a Taíno cacique, a chief named Caguax, who governed this region before Spanish colonization.
-
-Here's a detail that often surprises visitors: Caguas is known as the "Criollo City" — a celebration of the blended identity that defines Puerto Rican culture. The botanical garden is a living expression of that idea, combining indigenous, African, and Spanish influences in a single green space. It's a quiet but powerful reminder that Puerto Rico's heritage grows from many roots.`,
+For this drive, the garden matters because it marks a change in geography. San Juan's dense port city gives way here to a greener basin ringed by hills, and the route begins to feel less urban and more inland. It is one of the clearest transition points on the tour.`,
     },
     summary: {
-      en: 'A reclaimed industrial site transformed into a botanical garden featuring native flora and a Taíno heritage garden honoring indigenous culture.',
+      en: 'A botanical and cultural garden in the Caguas valley that links native plants, Taíno heritage, and the island’s inland agricultural landscape.',
+    },
+    audio: {
+      en: '/audio/en/pois/caguas-botanical-garden.mp3',
     },
   },
   {
-    id: 'mirador-piedra-degetau',
-    name: 'Mirador Piedra Degetau',
+    id: 'cayey-mountain-corridor',
+    name: 'Cayey Mountain Corridor',
     municipality: 'Cayey',
-    type: 'Natural / Scenic Overlook',
-    coordinates: { lat: 18.1280, lng: -66.1580 },
+    type: 'Scenic / Mountain Pass',
+    secondary: false,
+    coordinates: { lat: 18.128, lng: -66.158 },
+    triggerRadiusMeters: 600,
+    mandatory: false,
+    pausePrompt: false,
+    segment: 3,
+    estimatedStopMinutes: 10,
+    narration: {
+      en: `This stretch through Cayey is one of the most dramatic elevation changes on the route. You are crossing the Cordillera Central corridor, where the island's road network threads through Puerto Rico's mountainous spine. Even from the car, the temperature, cloud cover, and vegetation often shift noticeably here.
+
+The importance of Cayey is geographic as much as civic. It sits at a hinge between metropolitan San Juan and the southern municipalities, which is why this corridor has long mattered for movement, trade, and military logistics. Driving through it makes clear how quickly Puerto Rico compresses distinct landscapes into a short distance.
+
+If the coast introduced the island through fortifications and harbor defense, Cayey introduces it through topography. Roads here are not incidental infrastructure. They are a negotiation with ridgelines, valleys, weather, and the basic fact that Puerto Rico is mountainous at its core.`,
+    },
+    summary: {
+      en: 'A mountain passage through Cayey where the route crosses Puerto Rico’s central highlands and the island’s geography becomes the main attraction.',
+    },
+    audio: {
+      en: '/audio/en/pois/cayey-mountain-corridor.mp3',
+    },
+  },
+  {
+    id: 'guavate',
+    name: 'Guavate',
+    municipality: 'Cayey',
+    type: 'Cultural / Roadside District',
+    secondary: true,
+    coordinates: { lat: 18.1325382, lng: -66.0810171 },
     triggerRadiusMeters: 500,
     mandatory: false,
-    pausePrompt: true,
+    pausePrompt: false,
     segment: 3,
-    estimatedStopMinutes: 15,
+    estimatedStopMinutes: 20,
     narration: {
-      en: `If you can safely pull over here, you're approaching one of the most breathtaking viewpoints on the entire island — Mirador Piedra Degetau, perched high in the mountains of Cayey along the Luis A. Ferré Highway.
+      en: `Nearby Guavate is one of Puerto Rico's best-known mountain food districts, especially famous for its lechoneras. For many residents, Guavate is not just a place to eat. It is a ritual stop tied to weekend drives, holiday gatherings, and the social culture of the interior.
 
-From this elevation, you're looking out over the Cordillera Central, Puerto Rico's mountainous spine that runs east to west through the heart of the island. On a clear day, the views extend for miles across rolling green peaks, mist-filled valleys, and the patchwork of small farms that cling to the hillsides. This is the Puerto Rico that most tourists never see — rural, mountainous, and stunningly beautiful.
-
-The mirador is named after Federico Degetau, a Puerto Rican politician and writer who served as the island's first Resident Commissioner to the United States Congress in 1901. He was a passionate advocate for Puerto Rican self-governance and civil rights during a critical period when the island was transitioning from Spanish to American rule.
-
-Something you might not expect: the road you're traveling, PR-52, cuts through what ecologists call a cloud forest transition zone at its highest points. That mist you might see rolling over the peaks isn't just weather — it's a microclimate that supports unique plant species found nowhere else on Earth. You're driving not just through history but through one of the Caribbean's most ecologically significant corridors.
-
-Take a moment to breathe it in. The contrast between the urban bustle of San Juan you left behind and this serene mountain panorama is one of the great pleasures of driving through Puerto Rico.`,
+What makes Guavate fit this tour is that it shows a different kind of heritage than the formal monuments in San Juan. Here the culture is lived through music, smoke from roadside kitchens, family crowds, and the continued importance of mountain communities to Puerto Rican identity. Even if you do not stop today, knowing Guavate is nearby helps explain why Cayey occupies such a strong place in the island's mental map.`,
     },
     summary: {
-      en: 'A dramatic scenic overlook in Cayey with panoramic views of the Cordillera Central mountain range and cloud forest transition zone.',
+      en: 'A well-known mountain district in Cayey associated with lechoneras, weekend drives, and the social life of Puerto Rico’s interior.',
+    },
+    audio: {
+      en: '/audio/en/pois/guavate.mp3',
     },
   },
   {
-    id: 'juana-diaz-town',
-    name: 'Juana Díaz — Birthplace of Puerto Rican Poetry',
+    id: 'juana-diaz-plaza',
+    name: 'Juana Díaz Plaza and San Ramón Nonato Church',
     municipality: 'Juana Díaz',
-    type: 'Historical / Cultural',
-    coordinates: { lat: 18.0534, lng: -66.5066 },
+    type: 'Historical / Town Center',
+    secondary: false,
+    coordinates: { lat: 18.0525, lng: -66.5066 },
     triggerRadiusMeters: 500,
     mandatory: false,
     pausePrompt: false,
     segment: 4,
-    estimatedStopMinutes: 10,
+    estimatedStopMinutes: 15,
     narration: {
-      en: `Welcome to Juana Díaz, a town that punches well above its weight in Puerto Rican cultural history. Known locally as the "City of the Magi," Juana Díaz hosts one of the most spectacular Three Kings Day celebrations in all of Latin America every January.
+      en: `Juana Díaz was founded in 1798 and remains one of the most culturally resonant towns on Puerto Rico's southern side. Its plaza and church anchor a municipality known for the Three Kings festival and for its literary connection to Luis Lloréns Torres, one of the island's most celebrated poets.
 
-But there's another claim to fame here that runs even deeper. Juana Díaz is the birthplace of Luis Lloréns Torres, widely regarded as the national poet of Puerto Rico. Born here in 1876, Lloréns Torres wrote verses that captured the beauty of the island's landscape and the spirit of its people with an intimacy that still resonates today. His poem "Valle de Collores" — yes, named after the very valley we're heading toward — is considered one of the masterpieces of Puerto Rican literature.
+Lloréns Torres was born in the municipality and associated deeply with barrio Collores, the valley landscape ahead. That connection matters because the route is not only moving toward a waterfall. It is moving into a place already shaped in Puerto Rican memory through poetry.
 
-The town center still preserves its colonial-era plaza and the Church of San Ramón Nonato, founded in 1798. The streets here have a slower, more contemplative rhythm than the coast. You'll notice that the architecture transitions from the cosmopolitan Spanish colonial style of San Juan to something more rural and grounded — whitewashed walls, wrought-iron balconies, and modest facades that speak to the agricultural heart of this region.
-
-Juana Díaz sits at the crossroads between Puerto Rico's southern coastal plain and the mountain interior we've been driving through. It's a gateway town, and right now, it's your gateway to the waterfalls that lie just ahead.`,
+The plaza itself also helps pace the drive. After the mountain passage through Cayey, Juana Díaz feels flatter, warmer, and more open. It is a threshold between transit and arrival, the last urban reference point before the route pushes into the greener folds around Salto Collores.`,
     },
     summary: {
-      en: 'Known as the "City of the Magi," Juana Díaz is the birthplace of Puerto Rico\'s national poet Luis Lloréns Torres and hosts spectacular Three Kings Day celebrations.',
+      en: 'The civic heart of Juana Díaz, a town founded in 1798 and closely linked to the Three Kings tradition and poet Luis Lloréns Torres.',
+    },
+    audio: {
+      en: '/audio/en/pois/juana-diaz-plaza.mp3',
     },
   },
   {
@@ -113,6 +156,7 @@ Juana Díaz sits at the crossroads between Puerto Rico's southern coastal plain 
     name: 'Salto Collores',
     municipality: 'Juana Díaz',
     type: 'Natural / Waterfall',
+    secondary: false,
     coordinates: { lat: 18.0821, lng: -66.5312 },
     triggerRadiusMeters: 800,
     mandatory: true,
@@ -120,93 +164,107 @@ Juana Díaz sits at the crossroads between Puerto Rico's southern coastal plain 
     segment: 4,
     estimatedStopMinutes: 40,
     narration: {
-      en: `You've arrived at the highlight of our tour — Salto Collores, a magnificent waterfall hidden in the lush tropical ravine of barrio Collores in Juana Díaz. Find a safe place to park — this stop is absolutely worth getting out of the car.
+      en: `This is the mandatory stop on the tour and the point where landscape takes over from roadway. Salto Collores lies in the Collores area of Juana Díaz, a green valley made famous well beyond the municipality by the writing of Luis Lloréns Torres. The waterfall is part of why that valley became such a durable image in Puerto Rican cultural memory.
 
-Salto Collores is a multi-tiered cascade that tumbles down a series of rock shelves carved over millennia by a mountain stream flowing from the Cordillera Central. The water falls through dense tropical vegetation — ferns, heliconias, and towering bamboo — creating a natural amphitheater of sound and mist. It's one of Puerto Rico's most beautiful waterfalls, yet it remains relatively unknown to the tourist mainstream, making it a genuine hidden gem.
+What makes the stop compelling is not scale alone. It is the combination of moving water, enclosed vegetation, rock shelves, and the feeling of having stepped away from the faster rhythms of the highway. In a compact island drive, Salto Collores supplies the sense of immersion that road narration can only prepare you for.
 
-The trail to the falls is short but involves some uneven terrain, so watch your footing. As you walk in, listen for the sound of the water growing louder through the trees. That building anticipation — the green tunnel opening up to reveal the white cascade — is a moment that stays with people long after they leave.
-
-Here's something to reflect on as you stand at the base of the falls: this valley, Collores, is the same landscape that inspired Luis Lloréns Torres to write "Valle de Collores," the poem we mentioned back in Juana Díaz. When he described the valley's beauty in verse — the rivers, the green hills, the feeling of standing in a place untouched by time — this is exactly what he was seeing. You're standing inside a poem.
-
-The geology here tells its own story. These rock formations are part of the volcanic and sedimentary layers that built Puerto Rico millions of years ago. The water has been carving these falls for thousands of years, and the lush plant life surrounding you is part of a subtropical moist forest ecosystem that supports dozens of endemic species.
-
-Take your time here. Breathe in the mist. Listen to the water. Salto Collores isn't just a scenic stop — it's a place where Puerto Rico's natural beauty, literary heritage, and geological history all converge. This is why we came.`,
+This stop also resolves the route thematically. You began with military stone at the edge of the Atlantic and now arrive in a place defined by runoff, shade, and inland quiet. Puerto Rico's natural and historical stories do not sit in separate compartments. On this route they keep folding into one another, and Salto Collores is where that becomes most tangible.`,
     },
     summary: {
-      en: 'A stunning multi-tiered waterfall cascading through a lush tropical ravine in barrio Collores. The landscape that inspired Puerto Rico\'s national poet. A must-stop destination.',
+      en: 'A waterfall stop in the Collores landscape of Juana Díaz, where natural scenery and one of Puerto Rico’s most literary valleys meet.',
+    },
+    audio: {
+      en: '/audio/en/pois/salto-collores.mp3',
     },
   },
   {
-    id: 'lago-tortuguero',
-    name: 'Laguna de Tortuguero',
-    municipality: 'Vega Baja',
-    type: 'Natural / Wildlife Refuge',
-    coordinates: { lat: 18.4710, lng: -66.3930 },
+    id: 'laguna-tortuguero',
+    name: 'Laguna Tortuguero',
+    municipality: 'Vega Baja / Manatí',
+    type: 'Natural / Lagoon',
+    secondary: false,
+    coordinates: { lat: 18.4618977, lng: -66.4467585 },
     triggerRadiusMeters: 700,
     mandatory: false,
     pausePrompt: false,
     segment: 5,
     estimatedStopMinutes: 15,
     narration: {
-      en: `As we approach Vega Baja along the northern coast, you're passing near one of Puerto Rico's most important natural treasures — Laguna de Tortuguero, the only natural freshwater coastal lagoon in Puerto Rico.
+      en: `Back on the north coast, Laguna Tortuguero introduces another Puerto Rico entirely. This lagoon system sits behind dunes and coastal lowlands and is one of the most distinctive wetland environments on the island. After the mountain and waterfall sections of the drive, the route opens into flatter land shaped by water in a completely different way.
 
-This 326-acre lagoon is a critical habitat for migratory waterfowl and resident wildlife, including the endangered West Indian manatee. The lagoon sits behind the coastal dunes and is connected to the ocean through a narrow channel, creating a unique brackish-to-fresh water gradient that supports an extraordinary diversity of life. Birdwatchers come from across the Caribbean to spot species here, from the snowy egret to the Caribbean coot.
+The lagoon matters ecologically because it supports wetland habitat and bird life, but it also matters as a reminder that the north coast is more than beaches and highway frontage. Between urban centers are protected and semi-protected environments whose value comes from hydrology, habitat, and the fragile transition between inland freshwater systems and the coast.
 
-The name "Tortuguero" comes from the Spanish word for turtle — this was once a major nesting area for sea turtles. While nesting activity has declined over the decades due to coastal development, conservation efforts are working to bring the turtles back. The surrounding nature reserve encompasses mangrove forests, freshwater marsh, and coastal forest — a complete cross-section of Puerto Rico's coastal ecology in one compact area.
-
-Here's an interesting detail: the lagoon's ecosystem is so unique that scientists use it as a natural laboratory for studying how freshwater and saltwater environments interact. Research conducted here has contributed to wetland conservation practices used across the Caribbean.
-
-We've transitioned from the mountain interior back to the coast, and this lagoon perfectly illustrates how quickly Puerto Rico's landscapes change. In just a few hours, you've traveled from colonial forts to mountain cloud forests to tropical waterfalls to coastal wetlands. That's the magic of this island — an entire world compressed into 100 by 35 miles.`,
+For the logic of the tour, Tortuguero works as a closing landscape chapter. It rounds out the drive by showing that Puerto Rico's variety is not just scenic variety. It is a rapid succession of genuinely different ecological zones.`,
     },
     summary: {
-      en: 'Puerto Rico\'s only natural freshwater coastal lagoon — a critical wildlife habitat home to endangered manatees, migratory birds, and coastal ecology research.',
+      en: 'A major northern-coast lagoon landscape that broadens the tour from mountains and waterfalls into wetlands and coastal ecology.',
+    },
+    audio: {
+      en: '/audio/en/pois/laguna-tortuguero.mp3',
+    },
+  },
+  {
+    id: 'balneario-puerto-nuevo',
+    name: 'Balneario Puerto Nuevo',
+    municipality: 'Vega Baja',
+    type: 'Natural / Beach',
+    secondary: true,
+    coordinates: { lat: 18.4919376, lng: -66.3984963 },
+    triggerRadiusMeters: 500,
+    mandatory: false,
+    pausePrompt: false,
+    segment: 5,
+    estimatedStopMinutes: 20,
+    narration: {
+      en: `If you continue exploring after Tortuguero, Balneario Puerto Nuevo is one of the clearest examples of how dramatic the north coast can look in a short span. The beach is known for the large rock formation that helps shelter the bathing area from stronger open-water wave action behind it.
+
+What makes Puerto Nuevo useful as a secondary stop is that it complements the lagoon nearby without repeating it. Tortuguero emphasizes habitat and wetlands. Puerto Nuevo emphasizes the exposed limestone and surf energy of the Atlantic edge. Together they give a fuller picture of Vega Baja's coastal environment.`,
+    },
+    summary: {
+      en: 'A Vega Baja beach known for its protective rock formation and for the more exposed Atlantic character of the north coast.',
+    },
+    audio: {
+      en: '/audio/en/pois/balneario-puerto-nuevo.mp3',
     },
   },
   {
     id: 'caparra-ruins',
     name: 'Ruinas de Caparra',
-    municipality: 'Guaynabo (San Juan Metro)',
+    municipality: 'Guaynabo',
     type: 'Historical / Archaeological',
-    coordinates: { lat: 18.4027, lng: -66.1108 },
-    triggerRadiusMeters: 600,
+    secondary: false,
+    coordinates: { lat: 18.405187, lng: -66.1136498 },
+    triggerRadiusMeters: 500,
     mandatory: false,
     pausePrompt: false,
     segment: 6,
-    estimatedStopMinutes: 10,
+    estimatedStopMinutes: 15,
     narration: {
-      en: `As we approach San Juan to complete our loop, you're passing near the Ruinas de Caparra — the archaeological remains of the very first Spanish settlement in Puerto Rico, and one of the oldest European settlement sites in the Americas.
+      en: `Near the end of the loop, the Ruinas de Caparra take you back to the beginning of the Spanish colonial presence in Puerto Rico. Caparra was founded in 1508 by Juan Ponce de León and became the island's first Spanish settlement on the main island. The site was later abandoned in favor of the more defensible and better-connected location that became Old San Juan.
 
-Caparra was founded in 1508 by Juan Ponce de León, the island's first governor and the man who would later become famous for his search for the Fountain of Youth. The settlement was established on a hill overlooking the bay, but the site proved problematic — the marshy lowlands bred mosquito-borne illnesses and the location lacked good harbor access. Within a few years, Ponce de León moved the settlement across the bay to what is now Old San Juan, and Caparra was abandoned.
+That makes Caparra especially powerful as a final stop. It explains why San Juan developed where it did. The move was not symbolic. It was driven by practical problems of health, transport, defense, and communication. In other words, the entire urban story you encountered at the beginning of the tour rests partly on the failure of this first settlement.
 
-What remains today are the stone foundations of Ponce de León's house and a small museum operated by the Institute of Puerto Rican Culture. The ruins are modest — low walls tracing the outlines of rooms where the colony's first Spanish governor planned the colonization of an island — but their historical significance is enormous. This is ground zero for the European story in Puerto Rico.
-
-Here's a detail that brings it full circle: the fort where we started today, El Morro, was built precisely because the Spanish learned from their Caparra mistake. They needed a defensible, well-positioned harbor. Every massive stone in El Morro's walls traces its purpose back to the lessons learned in these humble ruins.
-
-As we return to San Juan, you've now seen the full arc — from the island's first European foothold, through the mountains and waterfalls of its interior, to the coastal ecosystems that sustain it. That's Puerto Rico in one drive: layered, surprising, and profoundly beautiful.`,
+The ruins are modest, but their importance is not. They provide the origin point for the colonial thread running through the day, and they tie the route into a full historical loop before you return to metropolitan San Juan.`,
     },
     summary: {
-      en: 'Archaeological site of the first Spanish settlement in Puerto Rico, founded by Juan Ponce de León in 1508. Where the European chapter of the island\'s story began.',
+      en: 'The archaeological remains of Puerto Rico’s first Spanish settlement, founded in 1508 and later abandoned in favor of Old San Juan.',
+    },
+    audio: {
+      en: '/audio/en/pois/caparra-ruins.mp3',
     },
   },
 ];
 
-/**
- * Route waypoints define the driving path between POI clusters.
- * These are passed to the routing engine to generate the road-following polyline.
- *
- * FOLLOW-UP: These intermediate waypoints are approximate. The routing engine
- * (OSRM via Leaflet Routing Machine) will snap them to the road network.
- */
 export const routeWaypoints = [
-  { lat: 18.4655, lng: -66.1057 },  // San Juan (start)
-  { lat: 18.4706, lng: -66.1240 },  // El Morro
-  { lat: 18.2352, lng: -66.0378 },  // Caguas
-  { lat: 18.1280, lng: -66.1580 },  // Cayey / Mirador
-  { lat: 18.0534, lng: -66.5066 },  // Juana Díaz
-  { lat: 18.0821, lng: -66.5312 },  // Salto Collores
-  { lat: 18.4710, lng: -66.3930 },  // Vega Baja / Tortuguero
-  { lat: 18.4027, lng: -66.1108 },  // Caparra Ruins
-  { lat: 18.4655, lng: -66.1057 },  // San Juan (return)
+  { lat: 18.4655, lng: -66.1057 },
+  { lat: 18.4708427, lng: -66.1242276 },
+  { lat: 18.2395442, lng: -66.0622302 },
+  { lat: 18.128, lng: -66.158 },
+  { lat: 18.0525, lng: -66.5066 },
+  { lat: 18.0821, lng: -66.5312 },
+  { lat: 18.4618977, lng: -66.4467585 },
+  { lat: 18.405187, lng: -66.1136498 },
+  { lat: 18.4655, lng: -66.1057 },
 ];
 
 export default pois;
