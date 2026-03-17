@@ -51,6 +51,11 @@ export default function TourMap({ userPosition, interactive = true, showRoute = 
   const mapContainerRef = useRef(null);
   const mapRef = useRef(null);
   const userMarkerRef = useRef(null);
+  const onUserPanRef = useRef(onUserPan);
+
+  useEffect(() => {
+    onUserPanRef.current = onUserPan;
+  }, [onUserPan]);
 
   // Initialize map
   useEffect(() => {
@@ -71,8 +76,10 @@ export default function TourMap({ userPosition, interactive = true, showRoute = 
       maxZoom: 18,
     }).addTo(map);
 
-    if (interactive && onUserPan) {
-      map.on('dragstart', onUserPan);
+    if (interactive) {
+      map.on('dragstart', () => {
+        onUserPanRef.current?.();
+      });
     }
 
     // Draw route polyline from waypoints
@@ -105,7 +112,7 @@ export default function TourMap({ userPosition, interactive = true, showRoute = 
       map.remove();
       mapRef.current = null;
     };
-  }, [interactive, onUserPan, showRoute]);
+  }, [interactive, showRoute]);
 
   // Update user position marker
   useEffect(() => {
@@ -119,16 +126,21 @@ export default function TourMap({ userPosition, interactive = true, showRoute = 
     }
 
     if (followUser) {
-      mapRef.current.setView([userPosition.lat, userPosition.lng], 14, { animate: true });
+      mapRef.current.setView([userPosition.lat, userPosition.lng], 14, { animate: false });
     }
   }, [userPosition, followUser]);
 
   // Handle container resizes
   useEffect(() => {
     if (!mapRef.current) return;
-    const timeout = setTimeout(() => mapRef.current.invalidateSize(), 100);
+    const map = mapRef.current;
+    const timeout = setTimeout(() => {
+      if (mapRef.current === map) {
+        map.invalidateSize();
+      }
+    }, 100);
     return () => clearTimeout(timeout);
-  });
+  }, [height]);
 
   return <div ref={mapContainerRef} data-testid="tour-map" style={{ width: '100%', height }} />;
 }

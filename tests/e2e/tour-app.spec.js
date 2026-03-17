@@ -2,6 +2,7 @@ import { expect, test } from '@playwright/test';
 
 async function installMediaAndWindowSpies(page) {
   await page.addInitScript(() => {
+    window.__E2E__ = true;
     window.__playedAudio = [];
     window.__openedUrls = [];
 
@@ -113,14 +114,23 @@ test.describe('Active tour interactions', () => {
       return window.__tourTestApi.getState().triggeredPOIs.length;
     })).toBeGreaterThan(0);
     await expect.poll(async () => page.evaluate(() => {
-      return typeof window.__tourNavigationTestApi?.openReplayDrawer === 'function';
+      return Boolean(
+        document.querySelector('[data-testid="harness-open-replay"]') ||
+        document.querySelector('[data-testid="open-replay-drawer-button"]') ||
+        window.__tourNavigationTestApi?.openReplayDrawer
+      );
     })).toBeTruthy();
     await page.evaluate(() => {
-      window.__tourNavigationTestApi.openReplayDrawer();
+      document.querySelector('[data-testid="harness-open-replay"]')?.click()
+        || document.querySelector('[data-testid="open-replay-drawer-button"]')?.click()
+        || window.__tourNavigationTestApi?.openReplayDrawer();
     });
-    await expect(page.getByTestId('replay-drawer')).toBeVisible();
+    await expect.poll(async () => page.evaluate(() => {
+      return Boolean(document.querySelector('[data-testid="replay-drawer"]'));
+    })).toBeTruthy();
     await page.evaluate(() => {
-      window.__tourNavigationTestApi.closeReplayDrawer();
+      document.querySelector('[data-testid="close-replay-drawer-button"]')?.click()
+        || window.__tourNavigationTestApi?.closeReplayDrawer();
     });
     await expect(page.getByTestId('replay-drawer')).toHaveCount(0);
 

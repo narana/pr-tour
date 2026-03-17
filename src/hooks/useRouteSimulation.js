@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useMemo, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import routeData from '../data/routeData.json';
 import { findNearestPointIndex } from '../utils/route';
 
@@ -8,6 +8,7 @@ const SPEED_STEPS = [1, 2, 4, 8];
 export default function useRouteSimulation({ enabled, initialPosition, initialStepIndex = 0 }) {
   const geometry = routeData.geometry || [];
   const steps = routeData.steps || [];
+  const wasEnabledRef = useRef(false);
   const initialRouteIndex = useMemo(() => {
     if (!geometry.length) return 0;
 
@@ -28,10 +29,16 @@ export default function useRouteSimulation({ enabled, initialPosition, initialSt
   useEffect(() => {
     if (!enabled) {
       setIsRunning(false);
+      wasEnabledRef.current = false;
+      return;
+    }
+
+    if (wasEnabledRef.current) {
       return;
     }
 
     setRouteIndex(initialRouteIndex);
+    wasEnabledRef.current = true;
   }, [enabled, initialRouteIndex]);
 
   useEffect(() => {

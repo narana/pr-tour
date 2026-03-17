@@ -295,13 +295,14 @@ button {
 .navigation__recenter-btn {
   position: absolute;
   right: 16px;
-  bottom: 16px;
-  z-index: 1000;
+  bottom: 144px;
+  z-index: 1400;
   padding: 10px 14px;
   border-radius: 999px;
   background: rgba(255, 255, 255, 0.94);
   box-shadow: var(--shadow);
   font-weight: 600;
+  pointer-events: auto;
 }
 
 .navigation__top-bar {
@@ -376,6 +377,10 @@ button {
 @media (max-width: 540px) {
   .navigation__android-dock {
     bottom: 104px;
+  }
+
+  .navigation__recenter-btn {
+    bottom: 156px;
   }
 
   .navigation__android-primary,

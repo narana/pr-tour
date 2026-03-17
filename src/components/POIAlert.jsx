@@ -6,10 +6,7 @@ export default function POIAlert() {
   const { state, dispatch } = useTour();
   const { speak, stop, isSupported } = useTTS();
   const poi = state.activePOI;
-
-  if (!poi) return null;
-
-  const narrationText = poi.narration?.en || '';
+  const narrationText = poi?.narration?.en || '';
 
   const handlePlayNarration = () => {
     if (!state.volumeOn || !isSupported) return;
@@ -39,13 +36,15 @@ export default function POIAlert() {
 
   // Auto-play narration when POI triggers
   React.useEffect(() => {
-    if (poi && state.volumeOn && isSupported) {
-      speak(narrationText, {
-        audioSrc: poi.audio?.en,
-        onEnd: () => dispatch({ type: 'SET_NARRATION_PLAYING', payload: false }),
-      });
-    }
-  }, [poi?.id]);
+    if (!poi || !state.volumeOn || !isSupported) return;
+
+    speak(narrationText, {
+      audioSrc: poi.audio?.en,
+      onEnd: () => dispatch({ type: 'SET_NARRATION_PLAYING', payload: false }),
+    });
+  }, [dispatch, isSupported, narrationText, poi, speak, state.volumeOn]);
+
+  if (!poi) return null;
 
   return (
     <div className="poi-alert" data-testid="poi-alert">

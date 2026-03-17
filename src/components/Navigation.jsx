@@ -123,12 +123,22 @@ export default function Navigation() {
     }
   };
 
-  if (typeof window !== 'undefined' && !import.meta.env.PROD) {
+  useEffect(() => {
+    if (typeof window === 'undefined' || import.meta.env.PROD || window.__E2E__ !== true) {
+      return undefined;
+    }
+
     window.__tourNavigationTestApi = {
       openReplayDrawer: () => setReplayOpen(true),
       closeReplayDrawer: () => setReplayOpen(false),
     };
-  }
+
+    return () => {
+      if (window.__tourNavigationTestApi) {
+        delete window.__tourNavigationTestApi;
+      }
+    };
+  }, []);
 
   return (
     <div className={`navigation${drivingView ? ' navigation--driving' : ''}`} data-testid="navigation-screen">

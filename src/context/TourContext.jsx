@@ -150,7 +150,7 @@ export function TourProvider({ children }) {
   }, [state.screen, state.isPaused, state.startTime]);
 
   useEffect(() => {
-    if (typeof window === 'undefined' || import.meta.env.PROD) {
+    if (typeof window === 'undefined' || import.meta.env.PROD || window.__E2E__ !== true) {
       return undefined;
     }
 
@@ -161,7 +161,9 @@ export function TourProvider({ children }) {
     };
 
     return () => {
-      delete window.__tourTestApi;
+      if (window.__tourTestApi) {
+        delete window.__tourTestApi;
+      }
     };
   }, [state]);
 
