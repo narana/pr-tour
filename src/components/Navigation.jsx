@@ -1,31 +1,52 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { useTour } from '../context/TourContext';
 import useGeolocation from '../hooks/useGeolocation';
 import useProximity from '../hooks/useProximity';
 import useTurnByTurn from '../hooks/useTurnByTurn';
+import useRouteSimulation from '../hooks/useRouteSimulation';
+import useTTS from '../hooks/useTTS';
 import TourMap from './TourMap';
 import POIAlert from './POIAlert';
 import PauseScreen from './PauseScreen';
 import ReplayDrawer from './ReplayDrawer';
 import { formatDuration } from '../utils/geo';
+import {
+  buildGoogleMapsDirectionsUrl,
+  getPOIProgress,
+  isAndroidDevice,
+  launchGoogleMapsNavigation,
+} from '../utils/route';
 
 export default function Navigation() {
   const { state, dispatch, totalPOIs, visitedCount, progress, pois } = useTour();
   const { position, error } = useGeolocation(state.screen === 'active');
+  const { speak, stop } = useTTS();
   const [replayOpen, setReplayOpen] = useState(false);
+  const [followUser, setFollowUser] = useState(true);
+  const [drivingView, setDrivingView] = useState(true);
+  const [androidOptimized] = useState(() => isAndroidDevice());
+  const poiProgress = useMemo(() => getPOIProgress(pois), [pois]);
+  const [selectedTestPOIIndex, setSelectedTestPOIIndex] = useState(0);
+
+  const simulation = useRouteSimulation({
+    enabled: state.testMode,
+    initialPosition: position,
+    initialStepIndex: state.currentStepIndex,
+  });
+  const effectivePosition = state.testMode ? (simulation.position || position) : position;
 
   // Push GPS position into tour state
   useEffect(() => {
-    if (position) {
-      dispatch({ type: 'UPDATE_POSITION', payload: position });
+    if (effectivePosition) {
+      dispatch({ type: 'UPDATE_POSITION', payload: effectivePosition });
     }
-  }, [position, dispatch]);
+  }, [effectivePosition, dispatch]);
 
   // Proximity detection — monitors position against POI geofences
-  useProximity(position);
+  useProximity(effectivePosition);
 
   const { nextStep, formatStepDistance, summary } = useTurnByTurn({
-    position,
+    position: effectivePosition,
     volumeOn: state.volumeOn,
     isPaused: state.isPaused,
     currentStepIndex: state.currentStepIndex,
@@ -34,21 +55,30 @@ export default function Navigation() {
 
   // Check for tour completion: user returned near San Juan start after visiting at least half the POIs
   useEffect(() => {
-    if (!position || state.isPaused || visitedCount < Math.ceil(totalPOIs / 2)) return;
+    if (!effectivePosition || state.isPaused || state.testMode || visitedCount < Math.ceil(totalPOIs / 2)) return;
 
     // San Juan endpoint (roughly the start)
     const sjLat = 18.4655;
     const sjLng = -66.1057;
     const distToEnd = Math.sqrt(
-      Math.pow((position.lat - sjLat) * 111320, 2) +
-      Math.pow((position.lng - sjLng) * 111320 * Math.cos(sjLat * Math.PI / 180), 2)
+      Math.pow((effectivePosition.lat - sjLat) * 111320, 2) +
+      Math.pow((effectivePosition.lng - sjLng) * 111320 * Math.cos(sjLat * Math.PI / 180), 2)
     );
 
     // Within 2km of start and visited at least half POIs
     if (distToEnd < 2000 && state.elapsedSeconds > 600) {
       dispatch({ type: 'COMPLETE_TOUR' });
     }
-  }, [position, visitedCount, totalPOIs, state.isPaused, state.elapsedSeconds, dispatch]);
+  }, [effectivePosition, visitedCount, totalPOIs, state.isPaused, state.elapsedSeconds, state.testMode, dispatch]);
+
+  useEffect(() => {
+    if (!state.testMode) return;
+
+    const nextUpcomingIndex = poiProgress.findIndex((poi) => !state.visitedPOIs.includes(poi.id));
+    if (nextUpcomingIndex >= 0) {
+      setSelectedTestPOIIndex(nextUpcomingIndex);
+    }
+  }, [poiProgress, state.testMode, state.visitedPOIs]);
 
   const handlePause = () => {
     dispatch({ type: 'PAUSE_TOUR' });
@@ -64,13 +94,35 @@ export default function Navigation() {
 
   // Find next unvisited POI for the "next stop" display
   const nextPOI = pois.find((p) => !state.visitedPOIs.includes(p.id) && !state.triggeredPOIs.includes(p.id));
+  const selectedTestPOI = poiProgress[selectedTestPOIIndex] || null;
+  const nextDestination = nextPOI?.coordinates || nextStep?.coordinates || effectivePosition || pois[0]?.coordinates || null;
+  const googleMapsUrl = buildGoogleMapsDirectionsUrl(nextDestination);
 
   // Estimated remaining time (rough: based on fraction of route remaining)
   const totalEstimatedSeconds = 3 * 3600; // ~3 hours total drive
   const remainingSeconds = Math.max(0, Math.round(totalEstimatedSeconds * (1 - progress)) - state.elapsedSeconds);
 
+  const handlePreviewPOI = () => {
+    if (!selectedTestPOI) return;
+    if (!state.isPaused) {
+      dispatch({ type: 'PAUSE_TOUR' });
+    }
+    stop();
+    dispatch({ type: 'SHOW_POI', payload: selectedTestPOI });
+    speak(selectedTestPOI.narration?.en || '', { audioSrc: selectedTestPOI.audio?.en });
+    simulation.jumpToCoordinate(selectedTestPOI.coordinates);
+  };
+
+  const handleChangeTestPOI = (direction) => {
+    const nextIndex = Math.max(0, Math.min(selectedTestPOIIndex + direction, poiProgress.length - 1));
+    setSelectedTestPOIIndex(nextIndex);
+    if (poiProgress[nextIndex]) {
+      simulation.jumpToCoordinate(poiProgress[nextIndex].coordinates);
+    }
+  };
+
   return (
-    <div className="navigation">
+    <div className={`navigation${drivingView ? ' navigation--driving' : ''}`} data-testid="navigation-screen">
       {/* Top bar — next stop info */}
       <div className="navigation__top-bar">
         {nextPOI ? (
@@ -78,11 +130,23 @@ export default function Navigation() {
             <div className="navigation__next-turn">
               {nextStep ? `Next maneuver${formatStepDistance ? ` • ${formatStepDistance}` : ''}` : 'Next stop'}
             </div>
-            <div className="navigation__turn-instruction">
+            <div className="navigation__turn-instruction" data-testid="turn-instruction">
               {nextStep?.instruction || nextPOI.name}
             </div>
             {nextStep?.roadName && nextStep.roadName !== 'the road' && (
               <div className="navigation__turn-detail">Road: {nextStep.roadName}</div>
+            )}
+            {drivingView && (
+              <div className="navigation__driving-actions">
+                <button className="navigation__mode-btn" onClick={() => setDrivingView(false)} data-testid="standard-view-button">
+                  Standard View
+                </button>
+                {googleMapsUrl && (
+                  <a className="navigation__google-btn" href={googleMapsUrl} target="_blank" rel="noreferrer" data-testid="google-maps-link">
+                    Open in Google Maps
+                  </a>
+                )}
+              </div>
             )}
           </>
         ) : (
@@ -96,12 +160,41 @@ export default function Navigation() {
       {/* Map */}
       <div className="navigation__map">
         <TourMap
-          userPosition={position}
+          userPosition={effectivePosition}
           interactive={true}
           showRoute={true}
-          followUser={!state.isPaused}
+          followUser={!state.isPaused && followUser}
+          onUserPan={() => setFollowUser(false)}
         />
+        {!followUser && (
+          <button className="navigation__recenter-btn" onClick={() => setFollowUser(true)} data-testid="recenter-button">
+            Recenter
+          </button>
+        )}
       </div>
+
+      {nextDestination && (
+        <div className="navigation__android-dock" data-testid="android-navigation-dock">
+          <button
+            className="navigation__android-primary"
+            onClick={() => launchGoogleMapsNavigation(nextDestination)}
+            data-testid="google-maps-native-button"
+          >
+            {androidOptimized ? 'Start Google Maps Navigation' : 'Launch Google Maps'}
+          </button>
+          {googleMapsUrl && (
+            <a
+              className="navigation__android-secondary"
+              href={googleMapsUrl}
+              target="_blank"
+              rel="noreferrer"
+              data-testid="google-maps-overview-link"
+            >
+              Open Route Overview
+            </a>
+          )}
+        </div>
+      )}
 
       {/* POI alert overlay */}
       <POIAlert />
@@ -136,6 +229,47 @@ export default function Navigation() {
           </div>
         )}
 
+        {state.testMode && (
+          <div className="navigation__harness" data-testid="test-harness">
+            <div className="navigation__harness-header">
+              <span>Test harness</span>
+              <button className="navigation__mode-btn" onClick={() => setDrivingView((current) => !current)} data-testid="harness-driving-toggle">
+                {drivingView ? 'Driving View' : 'Driving UI'}
+              </button>
+            </div>
+            <div className="navigation__harness-copy">
+              {simulation.isRunning
+                ? `Simulating route traversal at ${simulation.speedMultiplier}x point speed.`
+                : 'Simulation paused. Use the POI controls to jump and preview narration.'}
+            </div>
+            <div className="navigation__harness-controls">
+              <button className="navigation__secondary-chip" onClick={() => simulation.setIsRunning(!simulation.isRunning)} data-testid="harness-run-button">
+                {simulation.isRunning ? 'Pause Sim' : 'Run Sim'}
+              </button>
+              <button className="navigation__secondary-chip" onClick={simulation.cycleSpeed} data-testid="harness-speed-button">
+                Speed {simulation.speedMultiplier}x
+              </button>
+              <button className="navigation__secondary-chip" onClick={() => setFollowUser(false)} data-testid="harness-pan-map">
+                Simulate Pan
+              </button>
+              <button className="navigation__secondary-chip" onClick={() => handleChangeTestPOI(-1)} disabled={selectedTestPOIIndex === 0} data-testid="harness-prev-poi">
+                Prev POI
+              </button>
+              <button className="navigation__secondary-chip" onClick={() => handleChangeTestPOI(1)} disabled={selectedTestPOIIndex >= poiProgress.length - 1} data-testid="harness-next-poi">
+                Next POI
+              </button>
+              <button className="navigation__secondary-chip" onClick={handlePreviewPOI} disabled={!selectedTestPOI} data-testid="harness-preview-poi">
+                Preview POI
+              </button>
+            </div>
+            {selectedTestPOI && (
+              <div className="navigation__harness-selected" data-testid="harness-selected-poi">
+                Selected: {selectedTestPOI.name}
+              </div>
+            )}
+          </div>
+        )}
+
         <div className="navigation__controls">
           {state.isPaused ? (
             <button
@@ -160,6 +294,11 @@ export default function Navigation() {
           <button className="navigation__volume-btn" onClick={handleToggleVolume}>
             {state.volumeOn ? '\u{1F50A}' : '\u{1F507}'}
           </button>
+          {!state.testMode && (
+            <button className="navigation__mode-btn" onClick={() => setDrivingView((current) => !current)}>
+              {drivingView ? 'Map View' : 'Driving View'}
+            </button>
+          )}
         </div>
       </div>
     </div>

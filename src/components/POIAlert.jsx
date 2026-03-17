@@ -48,8 +48,8 @@ export default function POIAlert() {
   }, [poi?.id]);
 
   return (
-    <div className="poi-alert">
-      <div className="poi-alert__name">
+    <div className="poi-alert" data-testid="poi-alert">
+      <div className="poi-alert__name" data-testid="poi-alert-name">
         {poi.name}
         {poi.mandatory && <span className="poi-alert__mandatory">Required Stop</span>}
       </div>

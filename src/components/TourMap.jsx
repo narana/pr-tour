@@ -47,7 +47,7 @@ const userIcon = L.divIcon({
  *  - followUser: boolean (auto-center on user position)
  *  - height: CSS height value
  */
-export default function TourMap({ userPosition, interactive = true, showRoute = true, followUser = false, height = '100%' }) {
+export default function TourMap({ userPosition, interactive = true, showRoute = true, followUser = false, onUserPan, height = '100%' }) {
   const mapContainerRef = useRef(null);
   const mapRef = useRef(null);
   const userMarkerRef = useRef(null);
@@ -70,6 +70,10 @@ export default function TourMap({ userPosition, interactive = true, showRoute = 
       attribution: '&copy; OpenStreetMap contributors',
       maxZoom: 18,
     }).addTo(map);
+
+    if (interactive && onUserPan) {
+      map.on('dragstart', onUserPan);
+    }
 
     // Draw route polyline from waypoints
     if (showRoute) {
@@ -101,7 +105,7 @@ export default function TourMap({ userPosition, interactive = true, showRoute = 
       map.remove();
       mapRef.current = null;
     };
-  }, [interactive, showRoute]);
+  }, [interactive, onUserPan, showRoute]);
 
   // Update user position marker
   useEffect(() => {
@@ -126,5 +130,5 @@ export default function TourMap({ userPosition, interactive = true, showRoute = 
     return () => clearTimeout(timeout);
   });
 
-  return <div ref={mapContainerRef} style={{ width: '100%', height }} />;
+  return <div ref={mapContainerRef} data-testid="tour-map" style={{ width: '100%', height }} />;
 }

@@ -1,14 +1,22 @@
-import { useState } from 'react';
+import { useMemo, useState } from 'react';
 import { useTour } from '../context/TourContext';
 import useGeolocation from '../hooks/useGeolocation';
 import TourMap from './TourMap';
 import pois from '../data/pois';
+import { formatDistance } from '../utils/geo';
+import { getStartConfigFromPosition } from '../utils/route';
 
 export default function PreTour() {
   const { dispatch } = useTour();
-  const { error, requestPermission } = useGeolocation(false);
+  const { error, requestPermission, position, accuracy } = useGeolocation(false);
   const [gpsReady, setGpsReady] = useState(false);
   const [gpsRequesting, setGpsRequesting] = useState(false);
+  const [testMode, setTestMode] = useState(false);
+
+  const startConfig = useMemo(() => {
+    if (!position) return null;
+    return getStartConfigFromPosition(position, pois);
+  }, [position]);
 
   const handleRequestGPS = async () => {
     setGpsRequesting(true);
@@ -18,7 +26,25 @@ export default function PreTour() {
   };
 
   const handleStart = () => {
-    dispatch({ type: 'START_TOUR' });
+    dispatch({ type: 'START_TOUR', payload: { testMode } });
+  };
+
+  const handleStartFromHere = () => {
+    if (!startConfig?.onRoute) return;
+
+    dispatch({
+      type: 'START_TOUR',
+      payload: {
+        currentStepIndex: startConfig.currentStepIndex,
+        currentSegment: startConfig.currentSegment,
+        visitedPOIs: startConfig.visitedPOIs,
+        testMode,
+      },
+    });
+  };
+
+  const handleLaunchHarness = () => {
+    dispatch({ type: 'START_TOUR', payload: { testMode: true } });
   };
 
   const totalStops = pois.length;
@@ -77,6 +103,32 @@ export default function PreTour() {
           A passenger is recommended to manage the device.
         </p>
 
+        <label className="pre-tour__test-toggle">
+          <input
+            type="checkbox"
+            data-testid="test-mode-checkbox"
+            checked={testMode}
+            onChange={(event) => setTestMode(event.target.checked)}
+          />
+          <span>Enable test mode controls after launch</span>
+        </label>
+
+        {gpsReady && position && startConfig && (
+          <div className="pre-tour__route-lock" data-testid="route-lock-card">
+            <div className="pre-tour__route-lock-title" data-testid="route-lock-title">
+              {startConfig.onRoute ? 'GPS locked to route' : 'GPS not yet on route'}
+            </div>
+            <div className="pre-tour__route-lock-copy">
+              {startConfig.onRoute
+                ? `You are about ${formatDistance(startConfig.routeDistanceMeters)} from the path. The tour can begin near ${startConfig.nextPOI?.name || 'the next waypoint'}.`
+                : `You are about ${formatDistance(startConfig.routeDistanceMeters)} from the planned route. Move closer to the path to start from your current location.`}
+            </div>
+            {accuracy != null && (
+              <div className="pre-tour__route-lock-meta">GPS accuracy: {Math.round(accuracy)} m</div>
+            )}
+          </div>
+        )}
+
         {error && <p style={{ color: '#d94040', fontSize: '0.85rem', textAlign: 'center', marginBottom: 10 }}>{error}</p>}
 
         {!gpsReady ? (
@@ -84,14 +136,29 @@ export default function PreTour() {
             className="pre-tour__start-btn"
             onClick={handleRequestGPS}
             disabled={gpsRequesting}
+            data-testid="enable-gps-button"
           >
             {gpsRequesting ? 'Requesting GPS...' : 'Enable GPS & Prepare Tour'}
           </button>
         ) : (
-          <button className="pre-tour__start-btn" onClick={handleStart}>
-            Start Tour
-          </button>
+          <div className="pre-tour__actions">
+            <button className="pre-tour__start-btn" onClick={handleStart} data-testid="start-tour-button">
+              Start From Beginning
+            </button>
+            <button
+              className="pre-tour__secondary-btn"
+              onClick={handleStartFromHere}
+              disabled={!startConfig?.onRoute}
+              data-testid="start-from-current-button"
+            >
+              Start From Current Location
+            </button>
+          </div>
         )}
+
+        <button className="pre-tour__secondary-btn pre-tour__secondary-btn--harness" onClick={handleLaunchHarness} data-testid="launch-harness-button">
+          Launch Test Harness
+        </button>
       </div>
     </div>
   );

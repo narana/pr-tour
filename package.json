@@ -7,6 +7,7 @@
     "dev": "vite",
     "build": "vite build",
     "preview": "vite preview",
+    "test:e2e": "playwright test",
     "generate:route": "node scripts/generate-route-data.mjs",
     "generate:audio": "node scripts/generate-audio-assets.mjs",
     "generate:assets": "npm run generate:route && npm run generate:audio"
@@ -19,6 +20,7 @@
     "react-leaflet": "^5.0.0"
   },
   "devDependencies": {
+    "@playwright/test": "^1.53.1",
     "@types/leaflet": "^1.9.17",
     "@vitejs/plugin-react": "^4.5.2",
     "vite": "^6.3.5"

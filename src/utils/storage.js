@@ -15,6 +15,7 @@ export function saveTourState(state) {
       elapsedSeconds: state.elapsedSeconds,
       startTime: state.startTime,
       pauseStartTime: state.pauseStartTime,
+      testMode: state.testMode,
     };
     localStorage.setItem(STORAGE_KEY, JSON.stringify(serializable));
   } catch {

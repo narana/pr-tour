@@ -168,6 +168,63 @@ button {
   cursor: not-allowed;
 }
 
+.pre-tour__actions {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.pre-tour__secondary-btn {
+  width: 100%;
+  padding: 14px 16px;
+  background: var(--color-surface);
+  color: var(--color-primary-dark);
+  font-weight: 600;
+  border-radius: var(--radius);
+  border: 1px solid var(--color-border);
+  box-shadow: var(--shadow);
+}
+
+.pre-tour__secondary-btn:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+}
+
+.pre-tour__secondary-btn--harness {
+  margin-top: 10px;
+}
+
+.pre-tour__test-toggle {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 14px;
+  font-size: 0.85rem;
+  color: var(--color-text-muted);
+}
+
+.pre-tour__route-lock {
+  background: var(--color-surface);
+  border-radius: var(--radius-sm);
+  padding: 12px 14px;
+  margin-bottom: 14px;
+  box-shadow: var(--shadow);
+}
+
+.pre-tour__route-lock-title {
+  font-size: 0.88rem;
+  font-weight: 700;
+  color: var(--color-primary-dark);
+  margin-bottom: 4px;
+}
+
+.pre-tour__route-lock-copy,
+.pre-tour__route-lock-meta {
+  font-size: 0.8rem;
+  line-height: 1.4;
+  color: var(--color-text-muted);
+}
+
 /* === Active Navigation === */
 .navigation {
   height: 100%;
@@ -176,9 +233,67 @@ button {
   position: relative;
 }
 
+.navigation--driving .navigation__top-bar {
+  padding-top: 16px;
+  padding-bottom: 16px;
+}
+
+.navigation--driving .navigation__turn-instruction {
+  font-size: 1.25rem;
+  line-height: 1.25;
+}
+
 .navigation__map {
   flex: 1;
   position: relative;
+}
+
+.navigation__android-dock {
+  position: absolute;
+  left: 16px;
+  right: 16px;
+  bottom: 92px;
+  z-index: 1000;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  pointer-events: none;
+}
+
+.navigation__android-primary,
+.navigation__android-secondary {
+  pointer-events: auto;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  min-height: 54px;
+  border-radius: 16px;
+  box-shadow: var(--shadow-lg);
+  text-decoration: none;
+  font-weight: 700;
+  font-size: 1rem;
+}
+
+.navigation__android-primary {
+  background: #1f6feb;
+  color: white;
+}
+
+.navigation__android-secondary {
+  background: rgba(255, 255, 255, 0.96);
+  color: var(--color-primary-dark);
+}
+
+.navigation__recenter-btn {
+  position: absolute;
+  right: 16px;
+  bottom: 16px;
+  z-index: 1000;
+  padding: 10px 14px;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.94);
+  box-shadow: var(--shadow);
+  font-weight: 600;
 }
 
 .navigation__top-bar {
@@ -210,6 +325,63 @@ button {
   margin-top: 4px;
 }
 
+.navigation__driving-actions {
+  display: flex;
+  gap: 8px;
+  margin-top: 10px;
+  flex-wrap: wrap;
+}
+
+.navigation__mode-btn,
+.navigation__google-btn,
+.navigation__secondary-chip {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 10px 12px;
+  border-radius: 999px;
+  font-size: 0.82rem;
+  font-weight: 600;
+  text-decoration: none;
+}
+
+.navigation__mode-btn {
+  border: none;
+}
+
+.navigation__mode-btn {
+  background: rgba(255, 255, 255, 0.16);
+  color: white;
+}
+
+.navigation__google-btn {
+  background: white;
+  color: var(--color-primary-dark);
+}
+
+.navigation__secondary-chip {
+  background: var(--color-bg);
+  color: var(--color-text);
+  border: 1px solid var(--color-border);
+}
+
+@media (max-width: 540px) {
+  .navigation__android-dock {
+    bottom: 104px;
+  }
+
+  .navigation__android-primary,
+  .navigation__android-secondary {
+    min-height: 58px;
+    font-size: 1.02rem;
+  }
+}
+
+.navigation__secondary-chip:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+}
+
 .navigation__bottom-bar {
   background: var(--color-surface);
   padding: 12px 16px;
@@ -235,6 +407,42 @@ button {
   margin-bottom: 10px;
 }
 
+.navigation__harness {
+  background: var(--color-bg);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-sm);
+  padding: 10px 12px;
+  margin-bottom: 10px;
+}
+
+.navigation__harness-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 10px;
+  font-size: 0.82rem;
+  font-weight: 700;
+  color: var(--color-primary-dark);
+  margin-bottom: 6px;
+}
+
+.navigation__harness-copy,
+.navigation__harness-selected {
+  font-size: 0.78rem;
+  color: var(--color-text-muted);
+}
+
+.navigation__harness-selected {
+  margin-top: 8px;
+}
+
+.navigation__harness-controls {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-top: 10px;
+}
+
 .navigation__progress-bar {
   flex: 1;
   height: 4px;
@@ -254,6 +462,7 @@ button {
 .navigation__controls {
   display: flex;
   gap: 10px;
+  flex-wrap: wrap;
 }
 
 .navigation__pause-btn {

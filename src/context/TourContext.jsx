@@ -18,6 +18,7 @@ const initialState = {
   userPosition: null,         // { lat, lng, accuracy }
   narrationPlaying: false,
   volumeOn: true,
+  testMode: false,
 };
 
 function tourReducer(state, action) {
@@ -31,11 +32,14 @@ function tourReducer(state, action) {
         screen: 'active',
         startTime: Date.now(),
         isPaused: false,
-        visitedPOIs: [],
-        triggeredPOIs: [],
+        visitedPOIs: action.payload?.visitedPOIs || [],
+        triggeredPOIs: action.payload?.triggeredPOIs || [],
         elapsedSeconds: 0,
-        currentSegment: 1,
-        currentStepIndex: 0,
+        currentSegment: action.payload?.currentSegment || 1,
+        currentStepIndex: action.payload?.currentStepIndex || 0,
+        activePOI: null,
+        narrationPlaying: false,
+        testMode: Boolean(action.payload?.testMode),
       };
 
     case 'UPDATE_POSITION':
@@ -48,6 +52,13 @@ function tourReducer(state, action) {
         activePOI: action.payload,
         triggeredPOIs: [...state.triggeredPOIs, action.payload.id],
         narrationPlaying: true,
+      };
+
+    case 'SHOW_POI':
+      return {
+        ...state,
+        activePOI: action.payload,
+        narrationPlaying: state.volumeOn,
       };
 
     case 'DISMISS_POI':
