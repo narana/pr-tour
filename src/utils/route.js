@@ -90,21 +90,48 @@ export function isAndroidDevice() {
   return typeof navigator !== 'undefined' && /Android/i.test(navigator.userAgent || '');
 }
 
-export function launchGoogleMapsNavigation(destination) {
+export function formatDestinationCoordinates(destination) {
+  if (!destination) return '';
+  return `${destination.lat.toFixed(5)}, ${destination.lng.toFixed(5)}`;
+}
+
+export function launchGoogleMapsNavigation(destination, options = {}) {
   if (!destination || typeof window === 'undefined') return;
+
+  const {
+    onAttempt,
+    onFallback,
+    onComplete,
+  } = options;
 
   const nativeUrl = buildGoogleMapsNativeNavigationUrl(destination);
   const webUrl = buildGoogleMapsDirectionsUrl(destination);
 
+  if (window.__E2E__ === true) {
+    window.__openedUrls = window.__openedUrls || [];
+    const url = isAndroidDevice() && nativeUrl ? nativeUrl : webUrl;
+    window.__openedUrls.push(url);
+    onAttempt?.(isAndroidDevice() && nativeUrl ? 'native' : 'web');
+    onComplete?.(isAndroidDevice() && nativeUrl ? 'native' : 'web');
+    return;
+  }
+
   if (isAndroidDevice() && nativeUrl) {
+    onAttempt?.('native');
     const fallbackTimer = window.setTimeout(() => {
+      onFallback?.('web');
       window.location.href = webUrl;
     }, 1200);
 
-    window.addEventListener('pagehide', () => window.clearTimeout(fallbackTimer), { once: true });
+    window.addEventListener('pagehide', () => {
+      window.clearTimeout(fallbackTimer);
+      onComplete?.('native');
+    }, { once: true });
     window.location.href = nativeUrl;
     return;
   }
 
+  onAttempt?.('web');
   window.open(webUrl, '_blank', 'noopener,noreferrer');
+  onComplete?.('web');
 }

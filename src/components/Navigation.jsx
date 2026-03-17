@@ -12,6 +12,7 @@ import ReplayDrawer from './ReplayDrawer';
 import { formatDuration } from '../utils/geo';
 import {
   buildGoogleMapsDirectionsUrl,
+  formatDestinationCoordinates,
   getPOIProgress,
   isAndroidDevice,
   launchGoogleMapsNavigation,
@@ -25,6 +26,8 @@ export default function Navigation() {
   const [followUser, setFollowUser] = useState(true);
   const [drivingView, setDrivingView] = useState(true);
   const [androidOptimized] = useState(() => isAndroidDevice());
+  const [navigationHandoffMessage, setNavigationHandoffMessage] = useState('');
+  const [navigationHandoffVariant, setNavigationHandoffVariant] = useState('neutral');
   const poiProgress = useMemo(() => getPOIProgress(pois), [pois]);
   const [selectedTestPOIIndex, setSelectedTestPOIIndex] = useState(0);
 
@@ -92,11 +95,70 @@ export default function Navigation() {
     dispatch({ type: 'TOGGLE_VOLUME' });
   };
 
+  useEffect(() => {
+    if (!navigationHandoffMessage) {
+      return undefined;
+    }
+
+    const timer = window.setTimeout(() => {
+      setNavigationHandoffMessage('');
+      setNavigationHandoffVariant('neutral');
+    }, 2800);
+
+    return () => {
+      window.clearTimeout(timer);
+    };
+  }, [navigationHandoffMessage]);
+
+  const handleLaunchGoogleMaps = () => {
+    if (!nextDestination) return;
+
+    launchGoogleMapsNavigation(nextDestination, {
+      onAttempt: (mode) => {
+        setNavigationHandoffVariant('info');
+        setNavigationHandoffMessage(
+          mode === 'native'
+            ? `Opening Google Maps turn-by-turn for ${nextDestinationLabel}.`
+            : `Opening ${nextDestinationLabel} in Google Maps.`
+        );
+      },
+      onFallback: () => {
+        setNavigationHandoffVariant('warning');
+        setNavigationHandoffMessage('Google Maps app did not open, so the route was sent to the browser instead.');
+      },
+      onComplete: (mode) => {
+        if (mode === 'web') {
+          setNavigationHandoffVariant('info');
+          setNavigationHandoffMessage(`Google Maps opened for ${nextDestinationLabel}.`);
+        }
+      },
+    });
+  };
+
+  const handleCopyDestination = async () => {
+    if (!nextDestinationCoordinates || typeof navigator === 'undefined' || !navigator.clipboard?.writeText) {
+      setNavigationHandoffVariant('warning');
+      setNavigationHandoffMessage('Clipboard access is unavailable in this browser.');
+      return;
+    }
+
+    try {
+      await navigator.clipboard.writeText(`${nextDestinationLabel} - ${nextDestinationCoordinates}`);
+      setNavigationHandoffVariant('success');
+      setNavigationHandoffMessage(`Copied ${nextDestinationLabel} coordinates.`);
+    } catch {
+      setNavigationHandoffVariant('warning');
+      setNavigationHandoffMessage('Could not copy the destination coordinates.');
+    }
+  };
+
   // Find next unvisited POI for the "next stop" display
   const nextPOI = pois.find((p) => !state.visitedPOIs.includes(p.id) && !state.triggeredPOIs.includes(p.id));
   const selectedTestPOI = poiProgress[selectedTestPOIIndex] || null;
   const nextDestination = nextPOI?.coordinates || nextStep?.coordinates || effectivePosition || pois[0]?.coordinates || null;
   const googleMapsUrl = buildGoogleMapsDirectionsUrl(nextDestination);
+  const nextDestinationLabel = nextPOI?.name || nextStep?.roadName || 'Next waypoint';
+  const nextDestinationCoordinates = formatDestinationCoordinates(nextDestination);
 
   // Estimated remaining time (rough: based on fraction of route remaining)
   const totalEstimatedSeconds = 3 * 3600; // ~3 hours total drive
@@ -194,9 +256,24 @@ export default function Navigation() {
 
       {nextDestination && (
         <div className="navigation__android-dock" data-testid="android-navigation-dock">
+          <div className="navigation__android-summary">
+            <div className="navigation__android-summary-label">Google Maps handoff</div>
+            <div className="navigation__android-summary-destination" data-testid="google-maps-destination">
+              {nextDestinationLabel}
+            </div>
+            <div className="navigation__android-summary-copy">{nextDestinationCoordinates}</div>
+            {navigationHandoffMessage && (
+              <div
+                className={`navigation__android-status navigation__android-status--${navigationHandoffVariant}`}
+                data-testid="google-maps-status"
+              >
+                {navigationHandoffMessage}
+              </div>
+            )}
+          </div>
           <button
             className="navigation__android-primary"
-            onClick={() => launchGoogleMapsNavigation(nextDestination)}
+            onClick={handleLaunchGoogleMaps}
             data-testid="google-maps-native-button"
           >
             {androidOptimized ? 'Start Google Maps Navigation' : 'Launch Google Maps'}
@@ -212,6 +289,13 @@ export default function Navigation() {
               Open Route Overview
             </a>
           )}
+          <button
+            className="navigation__android-secondary navigation__android-secondary--button"
+            onClick={handleCopyDestination}
+            data-testid="copy-destination-button"
+          >
+            Copy Destination Coordinates
+          </button>
         </div>
       )}
 

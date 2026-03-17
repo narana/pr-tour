@@ -5,12 +5,22 @@ async function installMediaAndWindowSpies(page) {
     window.__E2E__ = true;
     window.__playedAudio = [];
     window.__openedUrls = [];
+    window.__copiedText = '';
 
     const originalOpen = window.open;
     window.open = (...args) => {
       window.__openedUrls.push(args[0]);
       return originalOpen ? originalOpen.apply(window, args) : null;
     };
+
+    Object.defineProperty(navigator, 'clipboard', {
+      configurable: true,
+      value: {
+        writeText: async (value) => {
+          window.__copiedText = value;
+        },
+      },
+    });
 
     if ('speechSynthesis' in window) {
       window.speechSynthesis.cancel = () => {};
@@ -66,8 +76,22 @@ test.describe('Active tour interactions', () => {
     await page.getByTestId('launch-harness-button').click();
     await expect(page.getByTestId('navigation-screen')).toBeVisible();
     await expect(page.getByTestId('test-harness')).toBeVisible();
+    await expect(page.getByTestId('google-maps-destination')).toBeVisible();
     await expect(page.getByTestId('google-maps-native-button')).toBeVisible();
     await expect(page.getByTestId('google-maps-overview-link')).toHaveAttribute('href', /google\.com\/maps\/dir/);
+    await expect(page.getByTestId('copy-destination-button')).toBeVisible();
+
+    await page.evaluate(() => {
+      document.querySelector('[data-testid="google-maps-native-button"]')?.click();
+    });
+    await expect(page.getByTestId('google-maps-status')).toContainText(/Opening Google Maps/i);
+    await expect.poll(async () => page.evaluate(() => window.__openedUrls.length)).toBeGreaterThan(0);
+
+    await page.evaluate(() => {
+      document.querySelector('[data-testid="copy-destination-button"]')?.click();
+    });
+    await expect(page.getByTestId('google-maps-status')).toContainText(/Copied/i);
+    await expect.poll(async () => page.evaluate(() => window.__copiedText)).toContain(' - ');
 
     await page.getByTestId('harness-preview-poi').click({ force: true });
     await expect.poll(async () => page.evaluate(() => window.__playedAudio.length)).toBeGreaterThan(0);
