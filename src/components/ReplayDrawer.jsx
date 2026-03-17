@@ -12,7 +12,7 @@ export default function ReplayDrawer({ open, onClose }) {
   const [playingId, setPlayingId] = useState(null);
 
   // POIs that have been triggered or visited this session, in encounter order
-  const replayablePOIs = state.triggeredPOIs
+  const replayablePOIs = [...new Set([...state.triggeredPOIs, ...state.visitedPOIs])]
     .map((id) => pois.find((p) => p.id === id))
     .filter(Boolean);
 
@@ -36,12 +36,12 @@ export default function ReplayDrawer({ open, onClose }) {
   if (!open) return null;
 
   return (
-    <div className="replay-drawer">
+    <div className="replay-drawer" data-testid="replay-drawer">
       <div className="replay-drawer__backdrop" onClick={onClose} />
       <div className="replay-drawer__panel">
         <div className="replay-drawer__header">
           <h3 className="replay-drawer__title">Visited Stops</h3>
-          <button className="replay-drawer__close" onClick={onClose}>&times;</button>
+          <button className="replay-drawer__close" onClick={onClose} data-testid="close-replay-drawer-button">&times;</button>
         </div>
 
         {replayablePOIs.length === 0 ? (
@@ -61,6 +61,7 @@ export default function ReplayDrawer({ open, onClose }) {
                     className="replay-drawer__play-btn replay-drawer__play-btn--active"
                     onClick={handleStop}
                     aria-label={`Stop narration for ${poi.name}`}
+                    data-testid={`replay-stop-${poi.id}`}
                   >
                     &#9632;
                   </button>
@@ -69,6 +70,7 @@ export default function ReplayDrawer({ open, onClose }) {
                     className="replay-drawer__play-btn"
                     onClick={() => handlePlay(poi)}
                     aria-label={`Replay narration for ${poi.name}`}
+                    data-testid={`replay-play-${poi.id}`}
                   >
                     &#9654;
                   </button>

@@ -108,6 +108,8 @@ export default function Navigation() {
       dispatch({ type: 'PAUSE_TOUR' });
     }
     stop();
+    dispatch({ type: 'ADD_TRIGGERED_POI', payload: selectedTestPOI.id });
+    dispatch({ type: 'VISIT_POI', payload: selectedTestPOI.id });
     dispatch({ type: 'SHOW_POI', payload: selectedTestPOI });
     speak(selectedTestPOI.narration?.en || '', { audioSrc: selectedTestPOI.audio?.en });
     simulation.jumpToCoordinate(selectedTestPOI.coordinates);
@@ -120,6 +122,13 @@ export default function Navigation() {
       simulation.jumpToCoordinate(poiProgress[nextIndex].coordinates);
     }
   };
+
+  if (typeof window !== 'undefined' && !import.meta.env.PROD) {
+    window.__tourNavigationTestApi = {
+      openReplayDrawer: () => setReplayOpen(true),
+      closeReplayDrawer: () => setReplayOpen(false),
+    };
+  }
 
   return (
     <div className={`navigation${drivingView ? ' navigation--driving' : ''}`} data-testid="navigation-screen">
@@ -208,7 +217,7 @@ export default function Navigation() {
       {/* Bottom bar — progress + controls */}
       <div className="navigation__bottom-bar">
         {error && (
-          <p style={{ color: '#d94040', fontSize: '0.8rem', marginBottom: 8 }}>{error}</p>
+          <p style={{ color: '#d94040', fontSize: '0.8rem', marginBottom: 8 }} data-testid="navigation-error">{error}</p>
         )}
 
         <div className="navigation__progress">
@@ -249,6 +258,9 @@ export default function Navigation() {
               <button className="navigation__secondary-chip" onClick={simulation.cycleSpeed} data-testid="harness-speed-button">
                 Speed {simulation.speedMultiplier}x
               </button>
+              <button className="navigation__secondary-chip" onClick={() => setReplayOpen(true)} data-testid="harness-open-replay">
+                Open Replay
+              </button>
               <button className="navigation__secondary-chip" onClick={() => setFollowUser(false)} data-testid="harness-pan-map">
                 Simulate Pan
               </button>
@@ -275,23 +287,25 @@ export default function Navigation() {
             <button
               className="navigation__pause-btn navigation__pause-btn--resume"
               onClick={handleResume}
+              data-testid="resume-tour-button"
             >
               Resume Tour
             </button>
           ) : (
-            <button className="navigation__pause-btn" onClick={handlePause}>
+            <button className="navigation__pause-btn" onClick={handlePause} data-testid="pause-tour-button">
               Pause Tour
             </button>
           )}
           <button
             className="navigation__replay-btn"
             onClick={() => setReplayOpen(true)}
-            disabled={state.triggeredPOIs.length === 0}
+            disabled={state.triggeredPOIs.length === 0 && state.visitedPOIs.length === 0}
             aria-label="Replay visited stop narrations"
+            data-testid="open-replay-drawer-button"
           >
             &#x1F504;
           </button>
-          <button className="navigation__volume-btn" onClick={handleToggleVolume}>
+          <button className="navigation__volume-btn" onClick={handleToggleVolume} data-testid="toggle-volume-button">
             {state.volumeOn ? '\u{1F50A}' : '\u{1F507}'}
           </button>
           {!state.testMode && (

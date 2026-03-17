@@ -225,6 +225,14 @@ button {
   color: var(--color-text-muted);
 }
 
+.pre-tour__permission-help {
+  font-size: 0.8rem;
+  line-height: 1.45;
+  color: var(--color-danger);
+  text-align: center;
+  margin-bottom: 12px;
+}
+
 /* === Active Navigation === */
 .navigation {
   height: 100%;

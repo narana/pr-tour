@@ -1,0 +1,153 @@
+import { expect, test } from '@playwright/test';
+
+async function installMediaAndWindowSpies(page) {
+  await page.addInitScript(() => {
+    window.__playedAudio = [];
+    window.__openedUrls = [];
+
+    const originalOpen = window.open;
+    window.open = (...args) => {
+      window.__openedUrls.push(args[0]);
+      return originalOpen ? originalOpen.apply(window, args) : null;
+    };
+
+    if ('speechSynthesis' in window) {
+      window.speechSynthesis.cancel = () => {};
+      window.speechSynthesis.speak = () => {};
+      window.speechSynthesis.getVoices = () => [];
+    }
+
+    HTMLMediaElement.prototype.play = function play() {
+      window.__playedAudio.push(this.currentSrc || this.src);
+      queueMicrotask(() => {
+        if (typeof this.onended === 'function') {
+          this.onended(new Event('ended'));
+        }
+      });
+      return Promise.resolve();
+    };
+  });
+}
+
+test.describe('Pre-tour permissions', () => {
+  test('shows helpful blocked-permission messaging when geolocation is denied', async ({ page, context }) => {
+    await context.clearPermissions();
+    await page.goto('/');
+
+    await page.getByTestId('enable-gps-button').click();
+
+    await expect(page.getByText(/Location permission denied\. Please enable GPS access/i)).toBeVisible();
+    await expect(page.getByTestId('permission-help')).toBeVisible();
+    await expect(page.getByTestId('start-tour-button')).toHaveCount(0);
+  });
+
+  test('granted geolocation enables route-lock start from current position', async ({ page, context }) => {
+    await context.grantPermissions(['geolocation']);
+    await context.setGeolocation({ latitude: 18.2395442, longitude: -66.0622302 });
+    await page.goto('/');
+
+    await page.getByTestId('enable-gps-button').click();
+
+    await expect(page.getByTestId('route-lock-title')).toContainText('GPS locked to route');
+    await expect(page.getByTestId('start-from-current-button')).toBeEnabled();
+  });
+});
+
+test.describe('Active tour interactions', () => {
+  test.beforeEach(async ({ page, context }) => {
+    await context.grantPermissions(['geolocation']);
+    await installMediaAndWindowSpies(page);
+  });
+
+  test('manual harness previews POI media and exposes Android navigation controls', async ({ page }) => {
+    await page.goto('/');
+
+    await page.getByTestId('launch-harness-button').click();
+    await expect(page.getByTestId('navigation-screen')).toBeVisible();
+    await expect(page.getByTestId('test-harness')).toBeVisible();
+    await expect(page.getByTestId('google-maps-native-button')).toBeVisible();
+    await expect(page.getByTestId('google-maps-overview-link')).toHaveAttribute('href', /google\.com\/maps\/dir/);
+
+    await page.getByTestId('harness-preview-poi').click({ force: true });
+    await expect.poll(async () => page.evaluate(() => window.__playedAudio.length)).toBeGreaterThan(0);
+
+    const playedAudio = await page.evaluate(() => window.__playedAudio);
+    expect(playedAudio.some((value) => value.includes('/audio/en/pois/'))).toBeTruthy();
+  });
+
+  test('map pan reveals recenter control', async ({ page }) => {
+    await page.goto('/');
+    await page.getByTestId('launch-harness-button').click();
+
+    await page.getByTestId('harness-pan-map').click({ force: true });
+
+    const recenterButton = page.getByTestId('recenter-button');
+    await expect(recenterButton).toBeVisible();
+    await page.evaluate(() => {
+      document.querySelector('[data-testid="recenter-button"]')?.click();
+    });
+    await expect(recenterButton).toBeHidden();
+  });
+
+  test('start from current location advances route progress', async ({ page, context }) => {
+    await context.setGeolocation({ latitude: 18.2395442, longitude: -66.0622302 });
+    await page.goto('/');
+
+    await page.getByTestId('enable-gps-button').click();
+    await page.getByTestId('start-from-current-button').click({ force: true });
+
+    await expect(page.getByTestId('navigation-screen')).toBeVisible({ timeout: 10000 });
+    const savedState = await page.evaluate(() => JSON.parse(localStorage.getItem('pr-driving-tour-state') || '{}'));
+    expect(savedState.currentStepIndex).toBeGreaterThan(0);
+  });
+
+  test('pause, resume, volume toggle, and replay drawer all respond', async ({ page }) => {
+    await page.goto('/');
+    await page.getByTestId('launch-harness-button').click();
+    await page.evaluate(() => {
+      window.__tourTestApi.dispatch({ type: 'ADD_TRIGGERED_POI', payload: 'old-san-juan-el-morro' });
+      window.__tourTestApi.dispatch({ type: 'VISIT_POI', payload: 'old-san-juan-el-morro' });
+    });
+
+    await expect.poll(async () => page.evaluate(() => {
+      return window.__tourTestApi.getState().triggeredPOIs.length;
+    })).toBeGreaterThan(0);
+    await expect.poll(async () => page.evaluate(() => {
+      return typeof window.__tourNavigationTestApi?.openReplayDrawer === 'function';
+    })).toBeTruthy();
+    await page.evaluate(() => {
+      window.__tourNavigationTestApi.openReplayDrawer();
+    });
+    await expect(page.getByTestId('replay-drawer')).toBeVisible();
+    await page.evaluate(() => {
+      window.__tourNavigationTestApi.closeReplayDrawer();
+    });
+    await expect(page.getByTestId('replay-drawer')).toHaveCount(0);
+
+    await page.evaluate(() => {
+      document.querySelector('[data-testid="pause-tour-button"]')?.click();
+    });
+    await expect.poll(async () => page.evaluate(() => {
+      return JSON.parse(localStorage.getItem('pr-driving-tour-state') || '{}').isPaused;
+    })).toBeTruthy();
+    await expect.poll(async () => page.evaluate(() => {
+      return Boolean(document.querySelector('[data-testid="pause-screen"]'));
+    })).toBeTruthy();
+    await page.evaluate(() => {
+      document.querySelector('[data-testid="pause-screen-resume-button"]')?.click();
+    });
+    await expect.poll(async () => page.evaluate(() => {
+      return Boolean(document.querySelector('[data-testid="pause-screen"]'));
+    })).toBeFalsy();
+
+    const initialVolumeLabel = await page.evaluate(() => {
+      return document.querySelector('[data-testid="toggle-volume-button"]')?.textContent;
+    });
+    await page.evaluate(() => {
+      document.querySelector('[data-testid="toggle-volume-button"]')?.click();
+    });
+    await expect.poll(async () => page.evaluate(() => {
+      return document.querySelector('[data-testid="toggle-volume-button"]')?.textContent;
+    })).not.toBe(initialVolumeLabel);
+  });
+});

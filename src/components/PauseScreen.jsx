@@ -35,7 +35,7 @@ export default function PauseScreen() {
   if (!state.isPaused) return null;
 
   return (
-    <div className="pause-screen">
+    <div className="pause-screen" data-testid="pause-screen">
       <div className="pause-screen__card">
         <div className="pause-screen__icon">&#x23F8;</div>
         <h2 className="pause-screen__title">Tour Paused</h2>
@@ -46,12 +46,12 @@ export default function PauseScreen() {
 
         <div className="pause-screen__timer">{formatDuration(pauseElapsed)}</div>
 
-        <button className="pause-screen__resume-btn" onClick={handleResume}>
+        <button className="pause-screen__resume-btn" onClick={handleResume} data-testid="pause-screen-resume-button">
           Resume Tour
         </button>
 
         {lastVisitedPOI && (
-          <button className="pause-screen__replay-btn" onClick={handleReplay}>
+          <button className="pause-screen__replay-btn" onClick={handleReplay} data-testid="pause-screen-replay-button">
             Replay Last Narration
           </button>
         )}

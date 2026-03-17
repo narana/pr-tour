@@ -61,6 +61,12 @@ function tourReducer(state, action) {
         narrationPlaying: state.volumeOn,
       };
 
+    case 'ADD_TRIGGERED_POI':
+      return {
+        ...state,
+        triggeredPOIs: [...new Set([...state.triggeredPOIs, action.payload])],
+      };
+
     case 'DISMISS_POI':
       return {
         ...state,
@@ -142,6 +148,22 @@ export function TourProvider({ children }) {
     }, 1000);
     return () => clearInterval(interval);
   }, [state.screen, state.isPaused, state.startTime]);
+
+  useEffect(() => {
+    if (typeof window === 'undefined' || import.meta.env.PROD) {
+      return undefined;
+    }
+
+    window.__tourTestApi = {
+      ...(window.__tourTestApi || {}),
+      dispatch,
+      getState: () => state,
+    };
+
+    return () => {
+      delete window.__tourTestApi;
+    };
+  }, [state]);
 
   const totalPOIs = pois.length;
   const visitedCount = state.visitedPOIs.length;

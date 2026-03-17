@@ -8,7 +8,7 @@ import { getStartConfigFromPosition } from '../utils/route';
 
 export default function PreTour() {
   const { dispatch } = useTour();
-  const { error, requestPermission, position, accuracy } = useGeolocation(false);
+  const { error, requestPermission, position, accuracy, permissionState } = useGeolocation(false);
   const [gpsReady, setGpsReady] = useState(false);
   const [gpsRequesting, setGpsRequesting] = useState(false);
   const [testMode, setTestMode] = useState(false);
@@ -130,6 +130,12 @@ export default function PreTour() {
         )}
 
         {error && <p style={{ color: '#d94040', fontSize: '0.85rem', textAlign: 'center', marginBottom: 10 }}>{error}</p>}
+
+        {permissionState === 'denied' && (
+          <p className="pre-tour__permission-help" data-testid="permission-help">
+            GPS permission is blocked in this browser. Re-enable location access for this site and try again.
+          </p>
+        )}
 
         {!gpsReady ? (
           <button
