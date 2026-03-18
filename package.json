@@ -6,7 +6,9 @@
   "scripts": {
     "dev": "vite",
     "dev:host": "vite --host 0.0.0.0",
-    "build": "vite build",
+    "verify:assets": "node scripts/verify-generated-assets.mjs",
+    "build:app": "vite build",
+    "build": "npm run verify:assets && npm run build:app",
     "preview": "vite preview",
     "preview:host": "vite preview --host 0.0.0.0",
     "test:e2e": "playwright test",

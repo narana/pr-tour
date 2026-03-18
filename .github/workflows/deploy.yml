@@ -30,6 +30,9 @@ jobs:
       - name: Install dependencies
         run: npm ci
 
+      - name: Verify generated assets
+        run: npm run verify:assets
+
       - name: Build
         env:
           VITE_BASE: /${{ github.event.repository.name }}/

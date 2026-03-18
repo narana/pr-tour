@@ -1,6 +1,7 @@
 import fs from 'node:fs/promises';
 import path from 'node:path';
 import poisModule, { routeWaypoints, routeWaypointLabels } from '../src/data/pois.js';
+import { buildRouteSourceFingerprint } from './asset-fingerprints.mjs';
 
 const pois = poisModule;
 const outputPath = path.resolve('src/data/routeData.json');
@@ -104,6 +105,11 @@ async function main() {
 
   const routeData = {
     generatedAt: new Date().toISOString(),
+    sourceFingerprint: buildRouteSourceFingerprint({
+      pois,
+      routeWaypoints,
+      routeWaypointLabels,
+    }),
     summary: {
       distanceMeters: Math.round(route.distance),
       durationSeconds: Math.round(route.duration),
