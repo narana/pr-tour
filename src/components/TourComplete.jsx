@@ -1,5 +1,6 @@
 import React from 'react';
 import { useTour } from '../context/TourContext';
+import { HeritageArtCluster } from './HeritageArt';
 import { formatDuration } from '../utils/geo';
 
 export default function TourComplete() {
@@ -11,6 +12,7 @@ export default function TourComplete() {
 
   return (
     <div className="tour-complete">
+      <HeritageArtCluster className="tour-complete__art" />
       <div className="tour-complete__icon">&#x1F389;</div>
       <h1 className="tour-complete__title">Tour Complete!</h1>
       <p className="tour-complete__subtitle">

@@ -4,11 +4,13 @@ import useGeolocation from '../hooks/useGeolocation';
 import useProximity from '../hooks/useProximity';
 import useTurnByTurn from '../hooks/useTurnByTurn';
 import useRouteSimulation from '../hooks/useRouteSimulation';
+import useUpcomingWaypointPreview from '../hooks/useUpcomingWaypointPreview';
 import useTTS from '../hooks/useTTS';
 import TourMap from './TourMap';
 import POIAlert from './POIAlert';
 import PauseScreen from './PauseScreen';
 import ReplayDrawer from './ReplayDrawer';
+import { HeritageArtCluster, PuertoRicoFlagArt } from './HeritageArt';
 import { formatDuration } from '../utils/geo';
 import {
   buildGoogleMapsDirectionsUrl,
@@ -47,6 +49,7 @@ export default function Navigation() {
 
   // Proximity detection — monitors position against POI geofences
   useProximity(effectivePosition);
+  useUpcomingWaypointPreview(effectivePosition);
 
   const { nextStep, formatStepDistance, summary } = useTurnByTurn({
     position: effectivePosition,
@@ -173,7 +176,10 @@ export default function Navigation() {
     dispatch({ type: 'ADD_TRIGGERED_POI', payload: selectedTestPOI.id });
     dispatch({ type: 'VISIT_POI', payload: selectedTestPOI.id });
     dispatch({ type: 'SHOW_POI', payload: selectedTestPOI });
-    speak(selectedTestPOI.narration?.en || '', { audioSrc: selectedTestPOI.audio?.en });
+    speak(selectedTestPOI.narration?.en || '', {
+      audioSrc: selectedTestPOI.audio?.en,
+      ambienceSrc: selectedTestPOI.soundscape?.en,
+    });
     simulation.jumpToCoordinate(selectedTestPOI.coordinates);
   };
 
@@ -206,6 +212,7 @@ export default function Navigation() {
     <div className={`navigation${drivingView ? ' navigation--driving' : ''}`} data-testid="navigation-screen">
       {/* Top bar — next stop info */}
       <div className="navigation__top-bar">
+        <HeritageArtCluster className="navigation__top-art" compact={true} />
         {nextPOI ? (
           <>
             <div className="navigation__next-turn">
@@ -257,7 +264,10 @@ export default function Navigation() {
       {nextDestination && (
         <div className="navigation__android-dock" data-testid="android-navigation-dock">
           <div className="navigation__android-summary">
-            <div className="navigation__android-summary-label">Google Maps handoff</div>
+            <div className="navigation__android-summary-label">
+              <PuertoRicoFlagArt className="navigation__flag-badge" />
+              <span>Google Maps handoff</span>
+            </div>
             <div className="navigation__android-summary-destination" data-testid="google-maps-destination">
               {nextDestinationLabel}
             </div>

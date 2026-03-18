@@ -1,0 +1,39 @@
+{
+  "version": "0.2.0",
+  "configurations": [
+    {
+      "name": "Vite Dev Server",
+      "type": "node-terminal",
+      "request": "launch",
+      "command": "npm run dev:host"
+    },
+    {
+      "name": "Open App In Chrome",
+      "type": "pwa-chrome",
+      "request": "launch",
+      "url": "http://localhost:5173",
+      "webRoot": "${workspaceFolder}/src"
+    },
+    {
+      "name": "Playwright E2E Headed",
+      "type": "node-terminal",
+      "request": "launch",
+      "command": "npm run test:e2e:headed"
+    },
+    {
+      "name": "Playwright E2E Debug",
+      "type": "node-terminal",
+      "request": "launch",
+      "command": "npm run test:e2e:debug"
+    }
+  ],
+  "compounds": [
+    {
+      "name": "Run App Locally",
+      "configurations": [
+        "Vite Dev Server",
+        "Open App In Chrome"
+      ]
+    }
+  ]
+}

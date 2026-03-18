@@ -12,6 +12,7 @@ export default function POIAlert() {
     if (!state.volumeOn || !isSupported) return;
     speak(narrationText, {
       audioSrc: poi.audio?.en,
+      ambienceSrc: poi.soundscape?.en,
       onEnd: () => dispatch({ type: 'SET_NARRATION_PLAYING', payload: false }),
     });
     dispatch({ type: 'SET_NARRATION_PLAYING', payload: true });
@@ -40,6 +41,7 @@ export default function POIAlert() {
 
     speak(narrationText, {
       audioSrc: poi.audio?.en,
+      ambienceSrc: poi.soundscape?.en,
       onEnd: () => dispatch({ type: 'SET_NARRATION_PLAYING', payload: false }),
     });
   }, [dispatch, isSupported, narrationText, poi, speak, state.volumeOn]);

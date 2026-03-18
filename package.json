@@ -5,9 +5,13 @@
   "type": "module",
   "scripts": {
     "dev": "vite",
+    "dev:host": "vite --host 0.0.0.0",
     "build": "vite build",
     "preview": "vite preview",
+    "preview:host": "vite preview --host 0.0.0.0",
     "test:e2e": "playwright test",
+    "test:e2e:headed": "playwright test --headed",
+    "test:e2e:debug": "playwright test --debug",
     "generate:route": "node scripts/generate-route-data.mjs",
     "generate:audio": "node scripts/generate-audio-assets.mjs",
     "generate:assets": "npm run generate:route && npm run generate:audio"

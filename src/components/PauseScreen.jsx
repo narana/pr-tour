@@ -29,7 +29,10 @@ export default function PauseScreen() {
   const handleReplay = () => {
     if (!lastVisitedPOI || !isSupported || !state.volumeOn) return;
     const text = lastVisitedPOI.narration?.en || '';
-    speak(text, { audioSrc: lastVisitedPOI.audio?.en });
+    speak(text, {
+      audioSrc: lastVisitedPOI.audio?.en,
+      ambienceSrc: lastVisitedPOI.soundscape?.en,
+    });
   };
 
   if (!state.isPaused) return null;

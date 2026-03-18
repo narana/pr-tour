@@ -2,15 +2,17 @@ import { useMemo, useState } from 'react';
 import { useTour } from '../context/TourContext';
 import useGeolocation from '../hooks/useGeolocation';
 import TourMap from './TourMap';
+import { HeritageArtCluster } from './HeritageArt';
 import pois from '../data/pois';
 import { formatDistance } from '../utils/geo';
-import { getStartConfigFromPosition } from '../utils/route';
+import { buildRouteRecoveryLabel, getStartConfigFromPosition, launchGoogleMapsNavigation } from '../utils/route';
 
 export default function PreTour() {
   const { dispatch } = useTour();
   const { error, requestPermission, position, accuracy, permissionState } = useGeolocation(false);
   const [gpsReady, setGpsReady] = useState(false);
   const [gpsRequesting, setGpsRequesting] = useState(false);
+  const [routeRecoveryStatus, setRouteRecoveryStatus] = useState('');
   const [testMode, setTestMode] = useState(false);
 
   const startConfig = useMemo(() => {
@@ -23,6 +25,24 @@ export default function PreTour() {
     const granted = await requestPermission();
     setGpsReady(granted);
     setGpsRequesting(false);
+  };
+
+  const handleGuideToRoute = () => {
+    if (!startConfig?.nearestRoutePoint) return;
+
+    launchGoogleMapsNavigation(startConfig.nearestRoutePoint, {
+      onAttempt: (mode) => {
+        setRouteRecoveryStatus(mode === 'native'
+          ? 'Opening Google Maps driving navigation...'
+          : 'Opening Google Maps directions in your browser...');
+      },
+      onFallback: () => {
+        setRouteRecoveryStatus('Google Maps app did not respond. Opening browser directions instead.');
+      },
+      onComplete: () => {
+        setRouteRecoveryStatus(`Google Maps launched for ${buildRouteRecoveryLabel(startConfig)}.`);
+      },
+    });
   };
 
   const handleStart = () => {
@@ -48,10 +68,12 @@ export default function PreTour() {
   };
 
   const totalStops = pois.length;
+  const routeRecoveryLabel = buildRouteRecoveryLabel(startConfig);
 
   return (
     <div className="pre-tour">
       <div className="pre-tour__header">
+        <HeritageArtCluster className="pre-tour__hero-art" />
         <h1 className="pre-tour__title">Puerto Rico Heritage &amp; Nature Tour</h1>
         <p className="pre-tour__subtitle">A self-guided driving tour through history and natural beauty</p>
       </div>
@@ -80,7 +102,7 @@ export default function PreTour() {
           <h3>Route Highlights</h3>
           <div className="pre-tour__highlight-item">
             <span className="pre-tour__highlight-icon">&#x1F3F0;</span>
-            <span>Old San Juan — Spanish colonial forts</span>
+            <span>Caparra and the northern colonial corridor</span>
           </div>
           <div className="pre-tour__highlight-item">
             <span className="pre-tour__highlight-icon">&#x26F0;</span>
@@ -121,10 +143,24 @@ export default function PreTour() {
             <div className="pre-tour__route-lock-copy">
               {startConfig.onRoute
                 ? `You are about ${formatDistance(startConfig.routeDistanceMeters)} from the path. The tour can begin near ${startConfig.nextPOI?.name || 'the next waypoint'}.`
-                : `You are about ${formatDistance(startConfig.routeDistanceMeters)} from the planned route. Move closer to the path to start from your current location.`}
+                : `You are about ${formatDistance(startConfig.routeDistanceMeters)} from the planned route. Use Google Maps to drive to ${routeRecoveryLabel} and then start from your current location.`}
             </div>
             {accuracy != null && (
               <div className="pre-tour__route-lock-meta">GPS accuracy: {Math.round(accuracy)} m</div>
+            )}
+            {!startConfig.onRoute && (
+              <div className="pre-tour__route-lock-actions">
+                <button
+                  className="pre-tour__secondary-btn pre-tour__secondary-btn--recovery"
+                  onClick={handleGuideToRoute}
+                  data-testid="guide-to-route-button"
+                >
+                  Guide Me To Route Entry
+                </button>
+                <div className="pre-tour__route-lock-meta" data-testid="route-recovery-status">
+                  {routeRecoveryStatus || `Nearest route entry: ${routeRecoveryLabel}`}
+                </div>
+              </div>
             )}
           </div>
         )}

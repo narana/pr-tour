@@ -1,6 +1,6 @@
 import fs from 'node:fs/promises';
 import path from 'node:path';
-import poisModule, { routeWaypoints } from '../src/data/pois.js';
+import poisModule, { routeWaypoints, routeWaypointLabels } from '../src/data/pois.js';
 
 const pois = poisModule;
 const outputPath = path.resolve('src/data/routeData.json');
@@ -36,8 +36,8 @@ function buildInstruction(step, legIndex, stepIndex, totalSteps) {
   }
 
   if (type === 'arrive') {
-    const poi = pois[Math.min(legIndex + 1, pois.length - 1)];
-    return poi ? `Arrive near ${poi.name}.` : 'Arrive at your destination.';
+    const label = routeWaypointLabels[legIndex] || 'your destination';
+    return `Arrive near ${label}.`;
   }
 
   if (type === 'roundabout' || type === 'rotary') {

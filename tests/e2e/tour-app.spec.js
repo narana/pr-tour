@@ -62,6 +62,23 @@ test.describe('Pre-tour permissions', () => {
     await expect(page.getByTestId('route-lock-title')).toContainText('GPS locked to route');
     await expect(page.getByTestId('start-from-current-button')).toBeEnabled();
   });
+
+  test('off-route geolocation offers Google Maps recovery guidance', async ({ page, context }) => {
+    await context.grantPermissions(['geolocation']);
+    await installMediaAndWindowSpies(page);
+    await context.setGeolocation({ latitude: 18.2011, longitude: -67.1396 });
+    await page.goto('/');
+
+    await page.getByTestId('enable-gps-button').click();
+
+    await expect(page.getByTestId('route-lock-title')).toContainText('GPS not yet on route');
+    await expect(page.getByTestId('start-from-current-button')).toBeDisabled();
+    await expect(page.getByTestId('guide-to-route-button')).toBeVisible();
+
+    await page.getByTestId('guide-to-route-button').click();
+    await expect.poll(async () => page.evaluate(() => window.__openedUrls.length)).toBeGreaterThan(0);
+    await expect(page.getByTestId('route-recovery-status')).toContainText(/Google Maps/i);
+  });
 });
 
 test.describe('Active tour interactions', () => {
@@ -130,8 +147,8 @@ test.describe('Active tour interactions', () => {
     await page.goto('/');
     await page.getByTestId('launch-harness-button').click();
     await page.evaluate(() => {
-      window.__tourTestApi.dispatch({ type: 'ADD_TRIGGERED_POI', payload: 'old-san-juan-el-morro' });
-      window.__tourTestApi.dispatch({ type: 'VISIT_POI', payload: 'old-san-juan-el-morro' });
+      window.__tourTestApi.dispatch({ type: 'ADD_TRIGGERED_POI', payload: 'caguas-botanical-garden' });
+      window.__tourTestApi.dispatch({ type: 'VISIT_POI', payload: 'caguas-botanical-garden' });
     });
 
     await expect.poll(async () => page.evaluate(() => {

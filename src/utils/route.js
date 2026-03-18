@@ -68,11 +68,17 @@ export function getStartConfigFromPosition(position, pois, options = {}) {
     onRoute: nearestRoutePoint.distanceMeters <= routeLockThreshold,
     nearestRouteIndex: nearestRoutePoint.index,
     routeDistanceMeters: nearestRoutePoint.distanceMeters,
+    nearestRoutePoint: nearestRoutePoint.point,
     currentStepIndex: clampIndex(nearestStep.index, Math.max(steps.length - 1, 0)),
     currentSegment: nearestStepData ? segmentFromStepId(nearestStepData.id) : 1,
     visitedPOIs,
     nextPOI,
   };
+}
+
+export function buildRouteRecoveryLabel(startConfig) {
+  if (!startConfig) return 'the route';
+  return startConfig.nextPOI?.name || 'the nearest route entry point';
 }
 
 export function buildGoogleMapsDirectionsUrl(destination) {
