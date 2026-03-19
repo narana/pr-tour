@@ -1,6 +1,8 @@
 import { useCallback, useRef, useEffect } from 'react';
+import { useTour } from '../context/TourContext';
 
 const SILENT_AUDIO_DATA_URI = 'data:audio/wav;base64,UklGRl4AAABXQVZFZm10IBAAAAABAAEARKwAAIhYAQACABAAZGF0YToAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA=';
+export const EXTERNAL_NAVIGATION_AUDIO_LEAD_IN_MS = 5000;
 
 function createSharedAudio() {
   if (typeof Audio === 'undefined') return null;
@@ -36,9 +38,11 @@ function resolveMediaUrl(src) {
  * Web Speech API quality varies significantly across devices and browsers.
  */
 export default function useTTS() {
+  const { state } = useTour();
   const utteranceRef = useRef(null);
   const audioRef = useRef(sharedNarrationAudio);
   const ambienceRef = useRef(sharedAmbienceAudio);
+  const pendingPlaybackTimerRef = useRef(null);
   const isSpeechSupportedRef = useRef(typeof window !== 'undefined' && 'speechSynthesis' in window);
   const isSupportedRef = useRef(Boolean(audioRef.current) || isSpeechSupportedRef.current);
 
@@ -86,6 +90,13 @@ export default function useTTS() {
       ambienceRef.current.onended = null;
       ambienceRef.current.onerror = null;
       ambienceRef.current.loop = false;
+    }
+  }, []);
+
+  const clearPendingPlayback = useCallback(() => {
+    if (pendingPlaybackTimerRef.current) {
+      window.clearTimeout(pendingPlaybackTimerRef.current);
+      pendingPlaybackTimerRef.current = null;
     }
   }, []);
 
@@ -139,6 +150,8 @@ export default function useTTS() {
   }, []);
 
   const stop = useCallback(() => {
+    clearPendingPlayback();
+
     if (audioRef.current) {
       audioRef.current.pause();
       audioRef.current.currentTime = 0;
@@ -151,7 +164,7 @@ export default function useTTS() {
     }
 
     stopAmbience();
-  }, [stopAmbience]);
+  }, [clearPendingPlayback, stopAmbience]);
 
   // Cancel speech on unmount
   useEffect(() => {
@@ -166,15 +179,13 @@ export default function useTTS() {
     onEnd,
     ambienceSrc,
     ambienceVolume = 0.16,
+    leadInMs = 0,
   } = {}) => {
     if (!isSpeechSupportedRef.current || !text) return false;
 
     const normalizedText = normalizePronunciationHints(text);
 
     window.speechSynthesis.cancel();
-    if (ambienceSrc) {
-      startAmbience(ambienceSrc, ambienceVolume);
-    }
 
     const utterance = new SpeechSynthesisUtterance(normalizedText);
     utterance.rate = rate;
@@ -203,7 +214,23 @@ export default function useTTS() {
     };
 
     utteranceRef.current = utterance;
-    window.speechSynthesis.speak(utterance);
+
+    const startSpeech = () => {
+      if (ambienceSrc) {
+        startAmbience(ambienceSrc, ambienceVolume);
+      }
+      window.speechSynthesis.speak(utterance);
+    };
+
+    if (leadInMs > 0) {
+      pendingPlaybackTimerRef.current = window.setTimeout(() => {
+        pendingPlaybackTimerRef.current = null;
+        startSpeech();
+      }, leadInMs);
+    } else {
+      startSpeech();
+    }
+
     return true;
   }, [normalizePronunciationHints, startAmbience, stopAmbience]);
 
@@ -214,48 +241,62 @@ export default function useTTS() {
     onEnd,
     ambienceSrc,
     ambienceVolume = 0.16,
+    leadInMs,
   } = {}) => {
     if (!isSupportedRef.current || !text) return;
+
+    const resolvedLeadInMs = leadInMs ?? (state.externalNavigationMode ? EXTERNAL_NAVIGATION_AUDIO_LEAD_IN_MS : 0);
 
     stop();
 
     if (audioSrc && audioRef.current) {
-      if (ambienceSrc) {
-        startAmbience(ambienceSrc, ambienceVolume);
-      }
-      audioRef.current.src = resolveMediaUrl(audioSrc);
-      audioRef.current.preload = 'auto';
-      audioRef.current.playsInline = true;
-      audioRef.current.playbackRate = 1;
-      audioRef.current.onended = () => {
-        stopAmbience();
-        onEnd?.();
-      };
-      audioRef.current.onerror = () => {
-        stopAmbience();
-        speakWithSpeechSynthesis(text, { rate, lang, onEnd, ambienceSrc, ambienceVolume });
-      };
-
-      audioRef.current.play().catch((error) => {
-        stopAmbience();
-
-        if (error?.name === 'NotAllowedError') {
-          return;
+      const startAudioPlayback = () => {
+        if (ambienceSrc) {
+          startAmbience(ambienceSrc, ambienceVolume);
         }
+        audioRef.current.src = resolveMediaUrl(audioSrc);
+        audioRef.current.preload = 'auto';
+        audioRef.current.playsInline = true;
+        audioRef.current.playbackRate = 1;
+        audioRef.current.onended = () => {
+          stopAmbience();
+          onEnd?.();
+        };
+        audioRef.current.onerror = () => {
+          stopAmbience();
+          speakWithSpeechSynthesis(text, { rate, lang, onEnd, ambienceSrc, ambienceVolume, leadInMs: 0 });
+        };
 
-        speakWithSpeechSynthesis(text, { rate, lang, onEnd, ambienceSrc, ambienceVolume });
-      });
+        audioRef.current.play().catch((error) => {
+          stopAmbience();
+
+          if (error?.name === 'NotAllowedError') {
+            return;
+          }
+
+          speakWithSpeechSynthesis(text, { rate, lang, onEnd, ambienceSrc, ambienceVolume, leadInMs: 0 });
+        });
+      };
+
+      if (resolvedLeadInMs > 0) {
+        pendingPlaybackTimerRef.current = window.setTimeout(() => {
+          pendingPlaybackTimerRef.current = null;
+          startAudioPlayback();
+        }, resolvedLeadInMs);
+      } else {
+        startAudioPlayback();
+      }
       return;
     }
 
-    speakWithSpeechSynthesis(text, { rate, lang, onEnd, ambienceSrc, ambienceVolume });
-  }, [speakWithSpeechSynthesis, startAmbience, stop, stopAmbience]);
+    speakWithSpeechSynthesis(text, { rate, lang, onEnd, ambienceSrc, ambienceVolume, leadInMs: resolvedLeadInMs });
+  }, [speakWithSpeechSynthesis, startAmbience, state.externalNavigationMode, stop, stopAmbience]);
 
   const isSpeaking = useCallback(() => {
     if (!isSupportedRef.current) return false;
 
     const audioPlaying = Boolean(audioRef.current && !audioRef.current.paused && !audioRef.current.ended);
-    return audioPlaying || (isSpeechSupportedRef.current && window.speechSynthesis.speaking);
+    return Boolean(pendingPlaybackTimerRef.current) || audioPlaying || (isSpeechSupportedRef.current && window.speechSynthesis.speaking);
   }, []);
 
   return { speak, stop, isSpeaking, isSupported: isSupportedRef.current, primePlayback };

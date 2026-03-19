@@ -42,6 +42,14 @@ test.describe('Regression: reset and saved state', () => {
     await expect.poll(async () => readStoredState(page)).toBeNull();
   });
 
+  test('active tour requests a screen wake lock', async ({ page }) => {
+    await launchHarness(page);
+
+    await expect.poll(async () => {
+      return page.evaluate(() => window.__wakeLockRequests);
+    }).toContain('screen');
+  });
+
   test('active-tour Android Auto toggle updates and persists without leaving navigation', async ({ page }) => {
     await launchHarness(page);
 

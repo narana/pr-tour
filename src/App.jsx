@@ -4,6 +4,7 @@ import PreTour from './components/PreTour';
 import Navigation from './components/Navigation';
 import TourComplete from './components/TourComplete';
 import useTTS from './hooks/useTTS';
+import useScreenWakeLock from './hooks/useScreenWakeLock';
 
 function AudioPrimingBoundary() {
   const { state } = useTour();
@@ -53,6 +54,12 @@ function AudioPrimingBoundary() {
   return null;
 }
 
+function ScreenWakeLockBoundary() {
+  const { state } = useTour();
+  useScreenWakeLock(state.screen === 'active');
+  return null;
+}
+
 function TourRouter() {
   const { state } = useTour();
 
@@ -72,6 +79,7 @@ export default function App() {
   return (
     <TourProvider>
       <AudioPrimingBoundary />
+      <ScreenWakeLockBoundary />
       <TourRouter />
     </TourProvider>
   );

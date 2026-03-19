@@ -4,10 +4,13 @@ export async function installMediaAndWindowSpies(page) {
   await page.addInitScript(() => {
     window.__E2E__ = true;
     window.__playedAudio = [];
+    window.__playedAudioEvents = [];
     window.__speechSynthesisSpeakCalls = 0;
     window.__openedUrls = [];
     window.__copiedText = '';
     window.__confirmMessages = [];
+    window.__wakeLockRequests = [];
+    window.__wakeLockReleases = 0;
 
     const originalOpen = window.open;
     window.open = (...args) => {
@@ -29,6 +32,24 @@ export async function installMediaAndWindowSpies(page) {
       },
     });
 
+    Object.defineProperty(navigator, 'wakeLock', {
+      configurable: true,
+      value: {
+        request: async (type) => {
+          window.__wakeLockRequests.push(type);
+          return {
+            released: false,
+            async release() {
+              this.released = true;
+              window.__wakeLockReleases += 1;
+            },
+            addEventListener() {},
+            removeEventListener() {},
+          };
+        },
+      },
+    });
+
     if ('speechSynthesis' in window) {
       window.speechSynthesis.cancel = () => {};
       window.speechSynthesis.speak = () => {
@@ -38,7 +59,9 @@ export async function installMediaAndWindowSpies(page) {
     }
 
     HTMLMediaElement.prototype.play = function play() {
-      window.__playedAudio.push(this.currentSrc || this.src);
+      const src = this.currentSrc || this.src;
+      window.__playedAudio.push(src);
+      window.__playedAudioEvents.push({ src, time: Date.now() });
       queueMicrotask(() => {
         if (typeof this.onended === 'function') {
           this.onended(new Event('ended'));

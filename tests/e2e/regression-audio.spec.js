@@ -69,11 +69,20 @@ test.describe('Regression: audio playback paths', () => {
     const directionAudio = await page.evaluate(() => window.__playedAudio.filter((value) => value.includes('/audio/en/directions/')));
     expect(directionAudio).toHaveLength(0);
 
+    const previewClickTime = await page.evaluate(() => Date.now());
     await page.getByTestId('harness-preview-poi').click({ force: true });
     await expect(page.getByTestId('poi-alert')).toBeVisible();
+
     await expect.poll(async () => {
       return page.evaluate(() => window.__playedAudio.filter((value) => value.includes('/audio/en/pois/')).length);
-    }).toBe(1);
+    }, { timeout: 8000 }).toBe(1);
+
+    const firstPoiAudioDelay = await page.evaluate((clickTime) => {
+      const event = window.__playedAudioEvents.find((entry) => entry.src.includes('/audio/en/pois/'));
+      return event ? event.time - clickTime : null;
+    }, previewClickTime);
+    expect(firstPoiAudioDelay).not.toBeNull();
+    expect(firstPoiAudioDelay).toBeGreaterThanOrEqual(5000);
 
     const speechCalls = await page.evaluate(() => window.__speechSynthesisSpeakCalls);
     expect(speechCalls).toBe(0);
