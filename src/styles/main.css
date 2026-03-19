@@ -746,6 +746,13 @@ button {
   margin-bottom: 6px;
 }
 
+.navigation__harness-header-actions {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+}
+
 .navigation__harness-copy,
 .navigation__harness-selected {
   font-size: 0.78rem;
@@ -754,6 +761,10 @@ button {
 
 .navigation__harness-selected {
   margin-top: 8px;
+}
+
+.navigation__harness-selected--collapsed {
+  margin-top: 2px;
 }
 
 .navigation__harness-controls {

@@ -30,6 +30,7 @@ export default function Navigation() {
   const [replayOpen, setReplayOpen] = useState(false);
   const [followUser, setFollowUser] = useState(true);
   const [drivingView, setDrivingView] = useState(true);
+  const [harnessCollapsed, setHarnessCollapsed] = useState(true);
   const [androidOptimized] = useState(() => isAndroidDevice());
   const [navigationHandoffMessage, setNavigationHandoffMessage] = useState('');
   const [navigationHandoffVariant, setNavigationHandoffVariant] = useState('neutral');
@@ -376,40 +377,60 @@ export default function Navigation() {
           <div className="navigation__harness" data-testid="test-harness">
             <div className="navigation__harness-header">
               <span>Test harness</span>
-              <button className="navigation__mode-btn" onClick={() => setDrivingView((current) => !current)} data-testid="harness-driving-toggle">
-                {drivingView ? 'Driving View' : 'Driving UI'}
-              </button>
+              <div className="navigation__harness-header-actions">
+                <button
+                  className="navigation__mode-btn"
+                  type="button"
+                  onClick={() => setHarnessCollapsed((current) => !current)}
+                  data-testid="harness-collapse-toggle"
+                  aria-expanded={!harnessCollapsed}
+                >
+                  {harnessCollapsed ? 'Show Harness' : 'Hide Harness'}
+                </button>
+                <button className="navigation__mode-btn" onClick={() => setDrivingView((current) => !current)} data-testid="harness-driving-toggle">
+                  {drivingView ? 'Driving View' : 'Driving UI'}
+                </button>
+              </div>
             </div>
-            <div className="navigation__harness-copy">
-              {simulation.isRunning
-                ? `Simulating route traversal at ${simulation.speedMultiplier}x point speed.`
-                : 'Simulation paused. Use the POI controls to jump and preview narration.'}
-            </div>
-            <div className="navigation__harness-controls">
-              <button className="navigation__secondary-chip" onClick={() => simulation.setIsRunning(!simulation.isRunning)} data-testid="harness-run-button">
-                {simulation.isRunning ? 'Pause Sim' : 'Run Sim'}
-              </button>
-              <button className="navigation__secondary-chip" onClick={simulation.cycleSpeed} data-testid="harness-speed-button">
-                Speed {simulation.speedMultiplier}x
-              </button>
-              <button className="navigation__secondary-chip" onClick={() => setReplayOpen(true)} data-testid="harness-open-replay">
-                Open Replay
-              </button>
-              <button className="navigation__secondary-chip" onClick={() => setFollowUser(false)} data-testid="harness-pan-map">
-                Simulate Pan
-              </button>
-              <button className="navigation__secondary-chip" onClick={() => handleChangeTestPOI(-1)} disabled={selectedTestPOIIndex === 0} data-testid="harness-prev-poi">
-                Prev POI
-              </button>
-              <button className="navigation__secondary-chip" onClick={() => handleChangeTestPOI(1)} disabled={selectedTestPOIIndex >= poiProgress.length - 1} data-testid="harness-next-poi">
-                Next POI
-              </button>
-              <button className="navigation__secondary-chip" onClick={handlePreviewPOI} disabled={!selectedTestPOI} data-testid="harness-preview-poi">
-                Preview POI
-              </button>
-            </div>
-            {selectedTestPOI && (
-              <div className="navigation__harness-selected" data-testid="harness-selected-poi">
+            {!harnessCollapsed && (
+              <>
+                <div className="navigation__harness-copy">
+                  {simulation.isRunning
+                    ? `Simulating route traversal at ${simulation.speedMultiplier}x point speed.`
+                    : 'Simulation paused. Use the POI controls to jump and preview narration.'}
+                </div>
+                <div className="navigation__harness-controls">
+                  <button className="navigation__secondary-chip" onClick={() => simulation.setIsRunning(!simulation.isRunning)} data-testid="harness-run-button">
+                    {simulation.isRunning ? 'Pause Sim' : 'Run Sim'}
+                  </button>
+                  <button className="navigation__secondary-chip" onClick={simulation.cycleSpeed} data-testid="harness-speed-button">
+                    Speed {simulation.speedMultiplier}x
+                  </button>
+                  <button className="navigation__secondary-chip" onClick={() => setReplayOpen(true)} data-testid="harness-open-replay">
+                    Open Replay
+                  </button>
+                  <button className="navigation__secondary-chip" onClick={() => setFollowUser(false)} data-testid="harness-pan-map">
+                    Simulate Pan
+                  </button>
+                  <button className="navigation__secondary-chip" onClick={() => handleChangeTestPOI(-1)} disabled={selectedTestPOIIndex === 0} data-testid="harness-prev-poi">
+                    Prev POI
+                  </button>
+                  <button className="navigation__secondary-chip" onClick={() => handleChangeTestPOI(1)} disabled={selectedTestPOIIndex >= poiProgress.length - 1} data-testid="harness-next-poi">
+                    Next POI
+                  </button>
+                  <button className="navigation__secondary-chip" onClick={handlePreviewPOI} disabled={!selectedTestPOI} data-testid="harness-preview-poi">
+                    Preview POI
+                  </button>
+                </div>
+                {selectedTestPOI && (
+                  <div className="navigation__harness-selected" data-testid="harness-selected-poi">
+                    Selected: {selectedTestPOI.name}
+                  </div>
+                )}
+              </>
+            )}
+            {harnessCollapsed && selectedTestPOI && (
+              <div className="navigation__harness-selected navigation__harness-selected--collapsed" data-testid="harness-selected-poi-collapsed">
                 Selected: {selectedTestPOI.name}
               </div>
             )}

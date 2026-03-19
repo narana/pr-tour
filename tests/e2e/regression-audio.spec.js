@@ -15,6 +15,7 @@ test.describe('Regression: audio playback paths', () => {
 
   test('test harness preview starts one pre-rendered narration and no TTS fallback', async ({ page }) => {
     await launchHarness(page);
+    await page.getByTestId('harness-collapse-toggle').click();
 
     await page.getByTestId('harness-preview-poi').click({ force: true });
 
@@ -32,6 +33,7 @@ test.describe('Regression: audio playback paths', () => {
 
   test('POI replay uses one additional pre-rendered narration and no TTS fallback', async ({ page }) => {
     await launchHarness(page);
+    await page.getByTestId('harness-collapse-toggle').click();
 
     await page.getByTestId('harness-preview-poi').click({ force: true });
     await expect(page.getByTestId('poi-alert')).toBeVisible();
@@ -58,6 +60,7 @@ test.describe('Regression: audio playback paths', () => {
     await page.goto('/');
     await page.getByTestId('external-navigation-mode-checkbox').check();
     await page.getByTestId('launch-harness-button').click();
+    await page.getByTestId('harness-collapse-toggle').click();
 
     await expect(page.getByTestId('navigation-screen')).toBeVisible();
     await expect(page.getByTestId('external-navigation-mode-badge')).toBeVisible();

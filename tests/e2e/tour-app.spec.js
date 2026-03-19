@@ -54,6 +54,9 @@ test.describe('Active tour interactions', () => {
     await page.getByTestId('launch-harness-button').click();
     await expect(page.getByTestId('navigation-screen')).toBeVisible();
     await expect(page.getByTestId('test-harness')).toBeVisible();
+    await expect(page.getByTestId('harness-collapse-toggle')).toHaveAttribute('aria-expanded', 'false');
+    await page.getByTestId('harness-collapse-toggle').click();
+    await expect(page.getByTestId('harness-collapse-toggle')).toHaveAttribute('aria-expanded', 'true');
     await expect(page.getByTestId('google-maps-destination')).toBeVisible();
     await expect(page.getByTestId('google-maps-native-button')).toBeVisible();
     await expect(page.getByTestId('google-maps-overview-link')).toHaveAttribute('href', /google\.com\/maps\/dir/);
@@ -83,6 +86,7 @@ test.describe('Active tour interactions', () => {
   test('map pan reveals recenter control', async ({ page }) => {
     await page.goto('/');
     await page.getByTestId('launch-harness-button').click();
+    await page.getByTestId('harness-collapse-toggle').click();
 
     await page.getByTestId('harness-pan-map').click({ force: true });
 
@@ -109,6 +113,7 @@ test.describe('Active tour interactions', () => {
   test('pause, resume, volume toggle, and replay drawer all respond', async ({ page }) => {
     await page.goto('/');
     await page.getByTestId('launch-harness-button').click();
+    await page.getByTestId('harness-collapse-toggle').click();
     await page.evaluate(() => {
       window.__tourTestApi.dispatch({ type: 'ADD_TRIGGERED_POI', payload: 'caguas-botanical-garden' });
       window.__tourTestApi.dispatch({ type: 'VISIT_POI', payload: 'caguas-botanical-garden' });
