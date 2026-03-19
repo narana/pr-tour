@@ -16,6 +16,16 @@ const sharedAmbienceAudio = createSharedAudio();
 let sharedAudioUnlocked = false;
 let sharedAudioUnlockPromise = null;
 
+function resolveMediaUrl(src) {
+  if (!src) return src;
+  if (/^(data:|blob:|https?:)/i.test(src)) return src;
+
+  const baseUrl = import.meta.env.BASE_URL || '/';
+  const normalizedBase = baseUrl.endsWith('/') ? baseUrl : `${baseUrl}/`;
+  const normalizedSrc = src.startsWith('/') ? src.slice(1) : src;
+  return `${normalizedBase}${normalizedSrc}`;
+}
+
 /**
  * Text-to-Speech narration hook using the Web Speech API (SpeechSynthesis).
  *
@@ -120,7 +130,7 @@ export default function useTTS() {
   const startAmbience = useCallback((src, volume = 0.16) => {
     if (!src || !ambienceRef.current) return;
 
-    ambienceRef.current.src = src;
+    ambienceRef.current.src = resolveMediaUrl(src);
     ambienceRef.current.volume = volume;
     ambienceRef.current.playsInline = true;
     ambienceRef.current.loop = true;
@@ -213,7 +223,7 @@ export default function useTTS() {
       if (ambienceSrc) {
         startAmbience(ambienceSrc, ambienceVolume);
       }
-      audioRef.current.src = audioSrc;
+      audioRef.current.src = resolveMediaUrl(audioSrc);
       audioRef.current.preload = 'auto';
       audioRef.current.playsInline = true;
       audioRef.current.playbackRate = 1;
