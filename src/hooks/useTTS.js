@@ -1,5 +1,21 @@
 import { useCallback, useRef, useEffect } from 'react';
 
+const SILENT_AUDIO_DATA_URI = 'data:audio/wav;base64,UklGRl4AAABXQVZFZm10IBAAAAABAAEARKwAAIhYAQACABAAZGF0YToAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA=';
+
+function createSharedAudio() {
+  if (typeof Audio === 'undefined') return null;
+
+  const audio = new Audio();
+  audio.preload = 'auto';
+  audio.playsInline = true;
+  return audio;
+}
+
+const sharedNarrationAudio = createSharedAudio();
+const sharedAmbienceAudio = createSharedAudio();
+let sharedAudioUnlocked = false;
+let sharedAudioUnlockPromise = null;
+
 /**
  * Text-to-Speech narration hook using the Web Speech API (SpeechSynthesis).
  *
@@ -11,8 +27,8 @@ import { useCallback, useRef, useEffect } from 'react';
  */
 export default function useTTS() {
   const utteranceRef = useRef(null);
-  const audioRef = useRef(typeof Audio !== 'undefined' ? new Audio() : null);
-  const ambienceRef = useRef(typeof Audio !== 'undefined' ? new Audio() : null);
+  const audioRef = useRef(sharedNarrationAudio);
+  const ambienceRef = useRef(sharedAmbienceAudio);
   const isSpeechSupportedRef = useRef(typeof window !== 'undefined' && 'speechSynthesis' in window);
   const isSupportedRef = useRef(Boolean(audioRef.current) || isSpeechSupportedRef.current);
 
@@ -63,11 +79,50 @@ export default function useTTS() {
     }
   }, []);
 
+  const primePlayback = useCallback(async () => {
+    if (!audioRef.current) return false;
+    if (sharedAudioUnlocked) return true;
+    if (sharedAudioUnlockPromise) return sharedAudioUnlockPromise;
+
+    sharedAudioUnlockPromise = (async () => {
+      const audio = audioRef.current;
+      const previousSrc = audio.src;
+      const previousMuted = audio.muted;
+      const previousVolume = audio.volume;
+      const previousPlaybackRate = audio.playbackRate;
+
+      try {
+        audio.src = SILENT_AUDIO_DATA_URI;
+        audio.muted = true;
+        audio.volume = 0;
+        audio.playbackRate = 1;
+        await audio.play();
+        audio.pause();
+        audio.currentTime = 0;
+        sharedAudioUnlocked = true;
+        return true;
+      } catch {
+        return false;
+      } finally {
+        audio.pause();
+        audio.currentTime = 0;
+        audio.src = previousSrc;
+        audio.muted = previousMuted;
+        audio.volume = previousVolume;
+        audio.playbackRate = previousPlaybackRate;
+        sharedAudioUnlockPromise = null;
+      }
+    })();
+
+    return sharedAudioUnlockPromise;
+  }, []);
+
   const startAmbience = useCallback((src, volume = 0.16) => {
     if (!src || !ambienceRef.current) return;
 
     ambienceRef.current.src = src;
     ambienceRef.current.volume = volume;
+    ambienceRef.current.playsInline = true;
     ambienceRef.current.loop = true;
     ambienceRef.current.currentTime = 0;
     ambienceRef.current.play().catch(() => {});
@@ -159,6 +214,8 @@ export default function useTTS() {
         startAmbience(ambienceSrc, ambienceVolume);
       }
       audioRef.current.src = audioSrc;
+      audioRef.current.preload = 'auto';
+      audioRef.current.playsInline = true;
       audioRef.current.playbackRate = 1;
       audioRef.current.onended = () => {
         stopAmbience();
@@ -169,8 +226,13 @@ export default function useTTS() {
         speakWithSpeechSynthesis(text, { rate, lang, onEnd, ambienceSrc, ambienceVolume });
       };
 
-      audioRef.current.play().catch(() => {
+      audioRef.current.play().catch((error) => {
         stopAmbience();
+
+        if (error?.name === 'NotAllowedError') {
+          return;
+        }
+
         speakWithSpeechSynthesis(text, { rate, lang, onEnd, ambienceSrc, ambienceVolume });
       });
       return;
@@ -186,5 +248,5 @@ export default function useTTS() {
     return audioPlaying || (isSpeechSupportedRef.current && window.speechSynthesis.speaking);
   }, []);
 
-  return { speak, stop, isSpeaking, isSupported: isSupportedRef.current };
+  return { speak, stop, isSpeaking, isSupported: isSupportedRef.current, primePlayback };
 }

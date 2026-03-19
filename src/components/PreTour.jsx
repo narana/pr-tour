@@ -1,6 +1,7 @@
 import { useMemo, useState } from 'react';
 import { useTour } from '../context/TourContext';
 import useGeolocation from '../hooks/useGeolocation';
+import useTTS from '../hooks/useTTS';
 import TourMap from './TourMap';
 import { HeritageArtCluster } from './HeritageArt';
 import pois from '../data/pois';
@@ -10,6 +11,7 @@ import { buildRouteRecoveryLabel, getStartConfigFromPosition, launchGoogleMapsNa
 export default function PreTour() {
   const { dispatch } = useTour();
   const { error, requestPermission, position, accuracy, permissionState } = useGeolocation(false);
+  const { primePlayback } = useTTS();
   const [gpsReady, setGpsReady] = useState(false);
   const [gpsRequesting, setGpsRequesting] = useState(false);
   const [routeRecoveryStatus, setRouteRecoveryStatus] = useState('');
@@ -22,6 +24,7 @@ export default function PreTour() {
 
   const handleRequestGPS = async () => {
     setGpsRequesting(true);
+    await primePlayback();
     const granted = await requestPermission();
     setGpsReady(granted);
     setGpsRequesting(false);
@@ -45,12 +48,15 @@ export default function PreTour() {
     });
   };
 
-  const handleStart = () => {
+  const handleStart = async () => {
+    await primePlayback();
     dispatch({ type: 'START_TOUR', payload: { testMode } });
   };
 
-  const handleStartFromHere = () => {
+  const handleStartFromHere = async () => {
     if (!startConfig?.onRoute) return;
+
+    await primePlayback();
 
     dispatch({
       type: 'START_TOUR',
@@ -63,7 +69,8 @@ export default function PreTour() {
     });
   };
 
-  const handleLaunchHarness = () => {
+  const handleLaunchHarness = async () => {
+    await primePlayback();
     dispatch({ type: 'START_TOUR', payload: { testMode: true } });
   };
 
