@@ -66,6 +66,7 @@ export default function useUpcomingWaypointPreview(position) {
     announcedPreviewsRef.current.add(nextWaypoint.id);
     speak(nextWaypoint.preview.en, {
       audioSrc: buildPreviewAudioSrc(nextWaypoint.id),
+      ambienceSrc: nextWaypoint.soundscape?.en,
     });
   }, [geometry, isSupported, poiProgress, position, speak, state.activePOI, state.isPaused, state.screen, state.triggeredPOIs, state.visitedPOIs, state.volumeOn]);
 }

@@ -333,6 +333,11 @@ button {
   color: var(--color-text-muted);
 }
 
+.pre-tour__test-toggle--mode {
+  align-items: flex-start;
+  line-height: 1.4;
+}
+
 .pre-tour__route-lock {
   background: var(--color-surface);
   border-radius: 18px;
@@ -547,6 +552,19 @@ button {
   opacity: 0.98;
 }
 
+.navigation__external-mode-badge {
+  display: inline-flex;
+  align-items: center;
+  margin-bottom: 8px;
+  padding: 6px 10px;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.16);
+  font-size: 0.72rem;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+
 .navigation__next-turn {
   font-size: 0.8rem;
   opacity: 0.85;
@@ -650,6 +668,63 @@ button {
   font-size: 0.78rem;
   color: var(--color-text-muted);
   margin-bottom: 10px;
+}
+
+.navigation__mode-strip {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 10px;
+}
+
+.navigation__mode-strip-label {
+  font-size: 0.78rem;
+  color: var(--color-text-muted);
+  font-weight: 600;
+}
+
+.navigation__external-toggle {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 38px;
+  padding: 8px 12px;
+  border-radius: 999px;
+  border: 1px solid rgba(0, 56, 168, 0.18);
+  background: rgba(255, 255, 255, 0.92);
+  color: var(--color-text);
+  font-size: 0.78rem;
+  font-weight: 700;
+  white-space: nowrap;
+}
+
+.navigation__external-toggle--active {
+  background: linear-gradient(135deg, rgba(0, 56, 168, 0.92) 0%, rgba(29, 92, 214, 0.9) 100%);
+  border-color: transparent;
+  color: white;
+}
+
+@media (max-width: 540px) {
+  .navigation__mode-strip {
+    align-items: stretch;
+    flex-direction: column;
+  }
+
+  .navigation__external-toggle {
+    width: 100%;
+  }
+}
+
+.navigation__external-mode-note {
+  margin-bottom: 10px;
+  padding: 10px 12px;
+  border-radius: var(--radius-sm);
+  background: linear-gradient(180deg, rgba(229, 238, 255, 0.84) 0%, rgba(255, 255, 255, 0.9) 100%);
+  border: 1px solid var(--color-border);
+  font-size: 0.8rem;
+  color: var(--color-text-muted);
+  line-height: 1.4;
 }
 
 .navigation__harness {

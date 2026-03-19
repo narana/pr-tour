@@ -1,44 +1,5 @@
 import { expect, test } from '@playwright/test';
-
-async function installMediaAndWindowSpies(page) {
-  await page.addInitScript(() => {
-    window.__E2E__ = true;
-    window.__playedAudio = [];
-    window.__openedUrls = [];
-    window.__copiedText = '';
-
-    const originalOpen = window.open;
-    window.open = (...args) => {
-      window.__openedUrls.push(args[0]);
-      return originalOpen ? originalOpen.apply(window, args) : null;
-    };
-
-    Object.defineProperty(navigator, 'clipboard', {
-      configurable: true,
-      value: {
-        writeText: async (value) => {
-          window.__copiedText = value;
-        },
-      },
-    });
-
-    if ('speechSynthesis' in window) {
-      window.speechSynthesis.cancel = () => {};
-      window.speechSynthesis.speak = () => {};
-      window.speechSynthesis.getVoices = () => [];
-    }
-
-    HTMLMediaElement.prototype.play = function play() {
-      window.__playedAudio.push(this.currentSrc || this.src);
-      queueMicrotask(() => {
-        if (typeof this.onended === 'function') {
-          this.onended(new Event('ended'));
-        }
-      });
-      return Promise.resolve();
-    };
-  });
-}
+import { installMediaAndWindowSpies, readStoredState } from './helpers';
 
 test.describe('Pre-tour permissions', () => {
   test('shows helpful blocked-permission messaging when geolocation is denied', async ({ page, context }) => {
@@ -111,7 +72,9 @@ test.describe('Active tour interactions', () => {
     await expect.poll(async () => page.evaluate(() => window.__copiedText)).toContain(' - ');
 
     await page.getByTestId('harness-preview-poi').click({ force: true });
-    await expect.poll(async () => page.evaluate(() => window.__playedAudio.length)).toBeGreaterThan(0);
+    await expect.poll(async () => {
+      return page.evaluate(() => window.__playedAudio.filter((value) => value.includes('/audio/en/pois/')).length);
+    }).toBe(1);
 
     const playedAudio = await page.evaluate(() => window.__playedAudio);
     expect(playedAudio.some((value) => value.includes('/audio/en/pois/'))).toBeTruthy();
@@ -139,7 +102,7 @@ test.describe('Active tour interactions', () => {
     await page.getByTestId('start-from-current-button').click({ force: true });
 
     await expect(page.getByTestId('navigation-screen')).toBeVisible({ timeout: 10000 });
-    const savedState = await page.evaluate(() => JSON.parse(localStorage.getItem('pr-driving-tour-state') || '{}'));
+    const savedState = await readStoredState(page);
     expect(savedState.currentStepIndex).toBeGreaterThan(0);
   });
 

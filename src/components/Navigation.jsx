@@ -12,7 +12,7 @@ import PauseScreen from './PauseScreen';
 import ReplayDrawer from './ReplayDrawer';
 import ResetTourButton from './ResetTourButton';
 import { HeritageArtCluster, PuertoRicoFlagArt } from './HeritageArt';
-import { formatDuration } from '../utils/geo';
+import { formatDuration, haversineDistance } from '../utils/geo';
 import {
   buildGoogleMapsDirectionsUrl,
   formatDestinationCoordinates,
@@ -20,11 +20,13 @@ import {
   isAndroidDevice,
   launchGoogleMapsNavigation,
 } from '../utils/route';
+import { routeWaypointLabels } from '../data/pois';
+import routeData from '../data/routeData.json';
 
 export default function Navigation() {
   const { state, dispatch, totalPOIs, visitedCount, progress, pois } = useTour();
   const { position, error } = useGeolocation(state.screen === 'active');
-  const { speak, stop } = useTTS();
+  const { stop } = useTTS();
   const [replayOpen, setReplayOpen] = useState(false);
   const [followUser, setFollowUser] = useState(true);
   const [drivingView, setDrivingView] = useState(true);
@@ -57,26 +59,24 @@ export default function Navigation() {
     volumeOn: state.volumeOn,
     isPaused: state.isPaused,
     currentStepIndex: state.currentStepIndex,
+    voiceGuidanceEnabled: !state.externalNavigationMode && !state.testMode,
     onStepChange: (stepIndex) => dispatch({ type: 'UPDATE_CURRENT_STEP', payload: stepIndex }),
   });
 
-  // Check for tour completion: user returned near San Juan start after visiting at least half the POIs
-  useEffect(() => {
-    if (!effectivePosition || state.isPaused || state.testMode || visitedCount < Math.ceil(totalPOIs / 2)) return;
+  const routeEndPoint = routeData.geometry?.[routeData.geometry.length - 1] || null;
+  const routeReturnLabel = routeWaypointLabels[routeWaypointLabels.length - 1] || 'the tour finish';
 
-    // San Juan endpoint (roughly the start)
-    const sjLat = 18.4655;
-    const sjLng = -66.1057;
-    const distToEnd = Math.sqrt(
-      Math.pow((effectivePosition.lat - sjLat) * 111320, 2) +
-      Math.pow((effectivePosition.lng - sjLng) * 111320 * Math.cos(sjLat * Math.PI / 180), 2)
-    );
+  // Check for tour completion when the user returns near the generated route endpoint.
+  useEffect(() => {
+    if (!effectivePosition || !routeEndPoint || state.isPaused || state.testMode || visitedCount < Math.ceil(totalPOIs / 2)) return;
+
+    const distToEnd = haversineDistance(effectivePosition, routeEndPoint);
 
     // Within 2km of start and visited at least half POIs
     if (distToEnd < 2000 && state.elapsedSeconds > 600) {
       dispatch({ type: 'COMPLETE_TOUR' });
     }
-  }, [effectivePosition, visitedCount, totalPOIs, state.isPaused, state.elapsedSeconds, state.testMode, dispatch]);
+  }, [dispatch, effectivePosition, routeEndPoint, state.elapsedSeconds, state.isPaused, state.testMode, totalPOIs, visitedCount]);
 
   useEffect(() => {
     if (!state.testMode) return;
@@ -97,6 +97,10 @@ export default function Navigation() {
 
   const handleToggleVolume = () => {
     dispatch({ type: 'TOGGLE_VOLUME' });
+  };
+
+  const handleToggleExternalNavigationMode = () => {
+    dispatch({ type: 'SET_EXTERNAL_NAVIGATION_MODE', payload: !state.externalNavigationMode });
   };
 
   useEffect(() => {
@@ -177,10 +181,6 @@ export default function Navigation() {
     dispatch({ type: 'ADD_TRIGGERED_POI', payload: selectedTestPOI.id });
     dispatch({ type: 'VISIT_POI', payload: selectedTestPOI.id });
     dispatch({ type: 'SHOW_POI', payload: selectedTestPOI });
-    speak(selectedTestPOI.narration?.en || '', {
-      audioSrc: selectedTestPOI.audio?.en,
-      ambienceSrc: selectedTestPOI.soundscape?.en,
-    });
     simulation.jumpToCoordinate(selectedTestPOI.coordinates);
   };
 
@@ -214,6 +214,11 @@ export default function Navigation() {
       {/* Top bar — next stop info */}
       <div className="navigation__top-bar">
         <HeritageArtCluster className="navigation__top-art" compact={true} />
+        {state.externalNavigationMode && (
+          <div className="navigation__external-mode-badge" data-testid="external-navigation-mode-badge">
+            Android Auto mode active
+          </div>
+        )}
         {nextPOI ? (
           <>
             <div className="navigation__next-turn">
@@ -241,7 +246,7 @@ export default function Navigation() {
         ) : (
           <>
             <div className="navigation__next-turn">Heading back to</div>
-            <div className="navigation__turn-instruction">San Juan</div>
+            <div className="navigation__turn-instruction">{routeReturnLabel}</div>
           </>
         )}
       </div>
@@ -339,7 +344,31 @@ export default function Navigation() {
         {summary && (
           <div className="navigation__route-summary">
             <span>{Math.round(summary.distanceMeters / 1000)} km route</span>
-            <span>{summary.stepCount} maneuvers stored locally</span>
+            <span>
+              {state.externalNavigationMode
+                ? 'Google Maps handles turn guidance'
+                : `${summary.stepCount} maneuvers stored locally`}
+            </span>
+          </div>
+        )}
+
+        <div className="navigation__mode-strip">
+          <span className="navigation__mode-strip-label">Turn guidance source</span>
+          <button
+            type="button"
+            className={`navigation__external-toggle${state.externalNavigationMode ? ' navigation__external-toggle--active' : ''}`}
+            onClick={handleToggleExternalNavigationMode}
+            data-testid="active-tour-external-navigation-toggle"
+            aria-pressed={state.externalNavigationMode}
+            aria-label={state.externalNavigationMode ? 'Disable Android Auto mode' : 'Enable Android Auto mode'}
+          >
+            {state.externalNavigationMode ? 'Android Auto On' : 'Android Auto Off'}
+          </button>
+        </div>
+
+        {state.externalNavigationMode && (
+          <div className="navigation__external-mode-note" data-testid="external-navigation-mode-note">
+            Google Maps / Android Auto is expected to handle turn-by-turn. POI narration remains active in this app.
           </div>
         )}
 

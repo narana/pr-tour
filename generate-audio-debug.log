@@ -1,0 +1,4 @@
+
+> pr-driving-tour@1.0.0 generate:audio
+> node scripts/generate-audio-assets.mjs --force
+

@@ -2,7 +2,7 @@
 
 ## Executive Summary
 
-A web-based, GPS-enabled self-guided driving tour application designed to take users through Puerto Rico's historical and natural landmarks. The application will guide drivers on a curated 2-4 hour tour route starting and ending in San Juan, passing through Caguas, Cayey, Juana Diaz, and Vega Baja, with mandatory stops at notable locations including Salto Collores waterfall. The application will provide real-time navigation, contextual audio-visual information about points of interest, and flexible pause/resume functionality.
+A web-based, GPS-enabled self-guided driving tour application designed to take users through Puerto Rico's historical and natural landmarks. The application will guide drivers on a curated 2-4 hour tour route starting and ending in Santurce, passing through Caguas, Cayey, Juana Diaz, and Vega Baja, with mandatory stops at notable locations including Salto Collores waterfall. The application will provide real-time navigation, contextual audio-visual information about points of interest, and flexible pause/resume functionality.
 
 ---
 
@@ -31,17 +31,17 @@ Tourists and locals seeking self-guided tours of Puerto Rico often lack:
 ### 2.1 Core Route Specifications
 **Route Name:** Southern Heritage & Waterfalls Tour
 
-**Start Point:** San Juan
+**Start Point:** Santurce
 - Launch location and return destination
 
 **Route Sequence:**
-1. San Juan (Start)
+1. Santurce (Start)
 2. Caguas (South)
 3. Cayey (South)
 4. Juana Diaz (East) - Waterfalls region
 5. **Salto Collores Waterfall** (Non-negotiable Stop)
 6. Vega Baja (North)
-7. San Juan (East - Return)
+7. Santurce (Return)
 
 **Duration:** 2-4 hours (estimated driving + exploration time)
 **Total Distance:** ~120-150 km (estimated)
@@ -82,7 +82,7 @@ Tourists and locals seeking self-guided tours of Puerto Rico often lack:
 #### 3.1.1 Initial Route Display
 - **Feature:** Full route overview on load
 - **Details:**
-  - Interactive map showing entire route from San Juan to San Juan
+  - Interactive map showing entire route from Santurce back to Santurce
   - Visual waypoints for all major stops
   - Distance and estimated driving time
   - Elevation changes (where relevant, especially near Cayey and Juana Diaz)

@@ -7,11 +7,11 @@ import TourMap from './TourMap';
 import { HeritageArtCluster } from './HeritageArt';
 import pois from '../data/pois';
 import { formatDistance } from '../utils/geo';
-import { buildRouteRecoveryLabel, getStartConfigFromPosition, launchGoogleMapsNavigation } from '../utils/route';
+import { buildRouteRecoveryLabel, getStartConfigFromPosition, isAndroidDevice, launchGoogleMapsNavigation } from '../utils/route';
 import ResetTourButton from './ResetTourButton';
 
 export default function PreTour() {
-  const { dispatch } = useTour();
+  const { state, dispatch } = useTour();
   const { error, requestPermission, position, accuracy, permissionState } = useGeolocation(false);
   const { primePlayback } = useTTS();
   const [gpsReady, setGpsReady] = useState(false);
@@ -79,6 +79,7 @@ export default function PreTour() {
   const totalStops = pois.length;
   const routeRecoveryLabel = buildRouteRecoveryLabel(startConfig);
   const routeKilometers = Math.round((routeData.summary?.distanceMeters || 0) / 1000);
+  const androidDevice = isAndroidDevice();
 
   return (
     <div className="pre-tour">
@@ -143,6 +144,21 @@ export default function PreTour() {
             onChange={(event) => setTestMode(event.target.checked)}
           />
           <span>Enable test mode controls after launch</span>
+        </label>
+
+        <label className="pre-tour__test-toggle pre-tour__test-toggle--mode">
+          <input
+            type="checkbox"
+            data-testid="external-navigation-mode-checkbox"
+            checked={state.externalNavigationMode}
+            onChange={(event) => {
+              dispatch({ type: 'SET_EXTERNAL_NAVIGATION_MODE', payload: event.target.checked });
+            }}
+          />
+          <span>
+            Use Google Maps / Android Auto for turn-by-turn. This app will keep POI narration active and mute in-app turn prompts.
+            {!androidDevice ? ' Best on Android devices connected to Android Auto.' : ''}
+          </span>
         </label>
 
         {gpsReady && position && startConfig && (

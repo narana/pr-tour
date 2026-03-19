@@ -74,12 +74,92 @@ def build_coqui_sample(time_seconds: float):
     return clamp(bed + call)
 
 
+def build_ceremonial_sample(time_seconds: float):
+    bed = (random.random() * 2.0 - 1.0) * 0.02
+    cycle = time_seconds % 2.6
+
+    drum = 0.0
+    for strike_time, amplitude, tone in ((0.0, 0.18, 108.0), (0.72, 0.13, 132.0), (1.46, 0.16, 116.0)):
+        offset = cycle - strike_time
+        if 0.0 <= offset <= 0.2:
+            envelope = math.exp(-18.0 * offset)
+            drum += math.sin(2.0 * math.pi * tone * offset) * envelope * amplitude
+            drum += math.sin(2.0 * math.pi * (tone * 1.95) * offset) * envelope * amplitude * 0.22
+
+    shaker = 0.0
+    for strike_time in (0.36, 1.08, 1.84):
+        offset = cycle - strike_time
+        if 0.0 <= offset <= 0.08:
+            shaker += (random.random() * 2.0 - 1.0) * math.exp(-45.0 * offset) * 0.14
+
+    flute = 0.0
+    melody_cycle = time_seconds % 5.2
+    if 0.9 <= melody_cycle <= 1.48:
+        flute += chirp(time_seconds, time_seconds - (melody_cycle - 0.9), 0.58, 480.0, 620.0, 0.07)
+    if 2.75 <= melody_cycle <= 3.33:
+        flute += chirp(time_seconds, time_seconds - (melody_cycle - 2.75), 0.58, 540.0, 430.0, 0.06)
+
+    return clamp((bed * 0.4) + drum + shaker + flute)
+
+
+def build_celebration_sample(time_seconds: float):
+    bed = (random.random() * 2.0 - 1.0) * 0.018
+    cycle = time_seconds % 3.2
+
+    conga = 0.0
+    for strike_time, tone, amplitude in ((0.0, 152.0, 0.15), (0.52, 178.0, 0.14), (1.04, 144.0, 0.17), (1.56, 198.0, 0.13), (2.08, 152.0, 0.16)):
+        offset = cycle - strike_time
+        if 0.0 <= offset <= 0.16:
+            envelope = math.exp(-20.0 * offset)
+            conga += math.sin(2.0 * math.pi * tone * offset) * envelope * amplitude
+            conga += math.sin(2.0 * math.pi * (tone * 2.3) * offset) * envelope * amplitude * 0.18
+
+    palmas = 0.0
+    for strike_time in (0.26, 0.78, 1.3, 1.82, 2.34):
+        offset = cycle - strike_time
+        if 0.0 <= offset <= 0.06:
+            palmas += (random.random() * 2.0 - 1.0) * math.exp(-55.0 * offset) * 0.18
+
+    cheer = 0.0
+    cheer_cycle = time_seconds % 6.4
+    if 4.2 <= cheer_cycle <= 5.1:
+        progress = (cheer_cycle - 4.2) / 0.9
+        crowd_envelope = math.sin(math.pi * progress) ** 2
+        cheer = ((random.random() * 2.0 - 1.0) * 0.08 + math.sin(2.0 * math.pi * 310.0 * time_seconds) * 0.012) * crowd_envelope
+
+    brass = 0.0
+    melody_cycle = time_seconds % 4.8
+    if 1.0 <= melody_cycle <= 1.42:
+        brass += chirp(time_seconds, time_seconds - (melody_cycle - 1.0), 0.42, 620.0, 760.0, 0.055)
+    if 3.0 <= melody_cycle <= 3.42:
+        brass += chirp(time_seconds, time_seconds - (melody_cycle - 3.0), 0.42, 760.0, 680.0, 0.05)
+
+    return clamp((bed * 0.35) + conga + palmas + cheer + brass)
+
+
+def build_mountain_sample(time_seconds: float):
+    wind = (random.random() * 2.0 - 1.0) * 0.08 * (0.45 + 0.55 * math.sin(2.0 * math.pi * 0.07 * time_seconds) ** 2)
+    low_rumble = math.sin(2.0 * math.pi * 62.0 * time_seconds) * 0.01
+    bird = 0.0
+    cycle = time_seconds % 8.4
+    if 1.1 <= cycle <= 1.5:
+        bird += chirp(time_seconds, time_seconds - (cycle - 1.1), 0.4, 1200.0, 1700.0, 0.11)
+    if 4.6 <= cycle <= 5.0:
+        bird += chirp(time_seconds, time_seconds - (cycle - 4.6), 0.4, 1460.0, 1920.0, 0.1)
+    if 6.7 <= cycle <= 7.18:
+        bird += chirp(time_seconds, time_seconds - (cycle - 6.7), 0.48, 980.0, 1420.0, 0.09)
+    return clamp((wind * 0.7) + low_rumble + bird)
+
+
 BUILDERS = {
     "forest": build_forest_sample,
     "waterfall": build_waterfall_sample,
     "surf": build_surf_sample,
     "wetland": build_wetland_sample,
     "coqui": build_coqui_sample,
+    "ceremonial": build_ceremonial_sample,
+    "celebration": build_celebration_sample,
+    "mountain": build_mountain_sample,
 }
 
 

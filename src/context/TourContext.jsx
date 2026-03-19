@@ -18,6 +18,7 @@ const initialState = {
   userPosition: null,         // { lat, lng, accuracy }
   narrationPlaying: false,
   volumeOn: true,
+  externalNavigationMode: false,
   testMode: false,
 };
 
@@ -95,6 +96,9 @@ function tourReducer(state, action) {
     case 'TOGGLE_VOLUME':
       return { ...state, volumeOn: !state.volumeOn };
 
+    case 'SET_EXTERNAL_NAVIGATION_MODE':
+      return { ...state, externalNavigationMode: Boolean(action.payload) };
+
     case 'UPDATE_ELAPSED':
       return { ...state, elapsedSeconds: action.payload };
 
@@ -139,6 +143,8 @@ export function TourProvider({ children }) {
     state.isPaused,
     state.currentSegment,
     state.currentStepIndex,
+    state.externalNavigationMode,
+    state.testMode,
     state.screen,
   ]);
 

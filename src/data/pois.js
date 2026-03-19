@@ -26,6 +26,11 @@ Quick trivia: Caguas takes its name from a Taino leader, not from a Spanish gove
     summary: {
       en: "A botanical and cultural garden in the Caguas valley that links native plants, Taino heritage, and the island's inland agricultural landscape.",
     },
+    soundscape: {
+      type: 'forest',
+      durationSeconds: 18,
+      en: '/audio/en/ambience/caguas-botanical-garden.wav',
+    },
     audio: {
       en: '/audio/en/pois/caguas-botanical-garden.mp3',
     },
@@ -93,6 +98,11 @@ Quick trivia: which name is older, Puerto Rico or Boriquen? The answer is Boriqu
     summary: {
       en: 'A drive-by history beat introducing Boriquen, Taino cultural continuity, and the island identity beneath later colonial names.',
     },
+    soundscape: {
+      type: 'ceremonial',
+      durationSeconds: 18,
+      en: '/audio/en/ambience/boriquen-heritage-corridor.wav',
+    },
     audio: {
       en: '/audio/en/pois/boriquen-heritage-corridor.mp3',
     },
@@ -124,6 +134,11 @@ Trivia question: what is the name of Puerto Rico's central mountain spine? A, Co
     summary: {
       en: "A mountain passage through Cayey where the route crosses Puerto Rico's central highlands and the island's geography becomes the main attraction.",
     },
+    soundscape: {
+      type: 'mountain',
+      durationSeconds: 18,
+      en: '/audio/en/ambience/cayey-mountain-corridor.wav',
+    },
     audio: {
       en: '/audio/en/pois/cayey-mountain-corridor.mp3',
     },
@@ -152,6 +167,11 @@ Quick trivia: Guavate is most famous for what mountain-road specialty? A, roast 
     },
     summary: {
       en: "A well-known mountain district in Cayey associated with lechoneras, weekend drives, and the social life of Puerto Rico's interior.",
+    },
+    soundscape: {
+      type: 'celebration',
+      durationSeconds: 18,
+      en: '/audio/en/ambience/guavate.wav',
     },
     audio: {
       en: '/audio/en/pois/guavate.mp3',
@@ -184,6 +204,11 @@ Multiple-choice trivia: Coamo is especially known for what long-standing attract
     summary: {
       en: "A drive-by valley segment near Coamo that highlights Puerto Rico's drier southern rain-shadow landscape.",
     },
+    soundscape: {
+      type: 'mountain',
+      durationSeconds: 18,
+      en: '/audio/en/ambience/coamo-valley-overlook.wav',
+    },
     audio: {
       en: '/audio/en/pois/coamo-valley-overlook.mp3',
     },
@@ -215,8 +240,85 @@ Quick trivia: Puerto Rican culture grew from only two influences, Taino and Span
     summary: {
       en: 'A long-leg narration point about Spanish rule, colonial road systems, and the combined Taino, Spanish, and African roots of Puerto Rican culture.',
     },
+    soundscape: {
+      type: 'ceremonial',
+      durationSeconds: 18,
+      en: '/audio/en/ambience/colonial-transition-corridor.wav',
+    },
     audio: {
       en: '/audio/en/pois/colonial-transition-corridor.mp3',
+    },
+  },
+  {
+    id: 'playa-cortada',
+    name: 'Playa Cortada',
+    municipality: 'Santa Isabel',
+    type: 'Natural / Beach',
+    secondary: true,
+    coordinates: { lat: 17.9798, lng: -66.2612 },
+    triggerRadiusMeters: 1900,
+    mandatory: false,
+    pausePrompt: false,
+    segment: 4,
+    estimatedStopMinutes: 20,
+    narration: {
+      en: `As the route reaches its closest brush with Puerto Rico's southern shore, Playa Cortada offers a useful picture of what makes this coast feel different from the Atlantic side. The Caribbean waters here are often calmer, the horizon looks broader and flatter, and the shoreline sits closer to dry plain, mangrove edges, and salt-shaped lowlands than to surf-battered rock formations.
+
+For the logic of the tour, Playa Cortada expands the south-coast story beyond town plazas and inland valleys. This is where the island's drier climate becomes tangible. Light often feels harsher, vegetation lower, and the sea more open and luminous. Even as a secondary detour, the beach helps explain why Puerto Rico's south has its own rhythm and visual language.
+
+Quick trivia for the road: which body of water fronts Puerto Rico's south coast, the Atlantic Ocean or the Caribbean Sea? The answer is the Caribbean Sea.`,
+    },
+    preview: {
+      en: `A south-coast beach detour is coming into range near Playa Cortada. If you want to add shoreline scenery to the drive, this is one of the clearest places to understand the calmer Caribbean character of the island's southern edge.
+
+Trivia question: does the south coast generally face the Atlantic or the Caribbean? The answer is the Caribbean.`,
+    },
+    summary: {
+      en: 'A secondary Santa Isabel beach stop that introduces the calmer Caribbean-facing shoreline and drier coastal plain of southern Puerto Rico.',
+    },
+    soundscape: {
+      type: 'surf',
+      durationSeconds: 18,
+      en: '/audio/en/ambience/playa-cortada.wav',
+    },
+    audio: {
+      en: '/audio/en/pois/playa-cortada.mp3',
+    },
+  },
+  {
+    id: 'balneario-de-salinas',
+    name: 'Balneario de Salinas',
+    municipality: 'Salinas',
+    type: 'Natural / Beach',
+    secondary: true,
+    coordinates: { lat: 17.9716, lng: -66.2974 },
+    triggerRadiusMeters: 2200,
+    mandatory: false,
+    pausePrompt: false,
+    segment: 4,
+    estimatedStopMinutes: 20,
+    narration: {
+      en: `A little farther along the south coast, Balneario de Salinas adds a more civic and recreational version of the shoreline story. This is the kind of beach that helps translate the broader landscape into everyday use: families near the water, fishing culture nearby, and a coast that has long been tied to both leisure and working maritime life.
+
+Salinas itself is strongly associated with the southern plain, nearby mangrove systems, and the broad Caribbean-facing edge of the island. Stopping here is less about dramatic surf than about understanding how communities live with a drier coast. The sea is part of local identity, but so are salt flats, coastal wetlands, and the warm lowland climate that shapes settlement on this side of Puerto Rico.
+
+Quick trivia as you continue: the municipality of Salinas is especially linked to what broad coastal environment, coral cliffs or salt flats? The answer is salt flats.`,
+    },
+    preview: {
+      en: `Another optional beach break is approaching near Salinas. This one leans more toward the lived shoreline of the south coast, where recreation, fishing culture, and low coastal ecosystems all meet the Caribbean.
+
+Quick trivia: Salinas is more closely associated with salt flats than with Atlantic surf cliffs. True or false? The answer is true.`,
+    },
+    summary: {
+      en: 'A secondary beach stop near Salinas that highlights the lived Caribbean shoreline, nearby wetlands, and the salt-flat landscape of Puerto Rico’s south coast.',
+    },
+    soundscape: {
+      type: 'surf',
+      durationSeconds: 18,
+      en: '/audio/en/ambience/balneario-de-salinas.wav',
+    },
+    audio: {
+      en: '/audio/en/pois/balneario-de-salinas.mp3',
     },
   },
   {
@@ -245,6 +347,11 @@ Trivia question: Juana Diaz is especially known for which holiday tradition? A, 
     },
     summary: {
       en: 'The civic heart of Juana Diaz, a town founded in 1798 and closely linked to the Three Kings tradition and poet Luis Llorens Torres.',
+    },
+    soundscape: {
+      type: 'celebration',
+      durationSeconds: 18,
+      en: '/audio/en/ambience/juana-diaz-plaza.wav',
     },
     audio: {
       en: '/audio/en/pois/juana-diaz-plaza.mp3',
@@ -349,6 +456,11 @@ Multiple-choice trivia: which municipality is closely associated with the 1950 n
     summary: {
       en: 'A drive-by mountain segment announcing arrival into the culturally resonant highlands around Jayuya.',
     },
+    soundscape: {
+      type: 'mountain',
+      durationSeconds: 18,
+      en: '/audio/en/ambience/jayuya-highland-corridor.wav',
+    },
     audio: {
       en: '/audio/en/pois/jayuya-highland-corridor.mp3',
     },
@@ -382,6 +494,11 @@ Quick multiple-choice trivia: what is a petroglyph? A, a carved image on rock. B
     summary: {
       en: 'A petroglyph site in Coabey, Jayuya, where carved indigenous imagery survives in a river-and-stone mountain setting.',
     },
+    soundscape: {
+      type: 'ceremonial',
+      durationSeconds: 18,
+      en: '/audio/en/ambience/la-piedra-escrita.wav',
+    },
     audio: {
       en: '/audio/en/pois/la-piedra-escrita.mp3',
     },
@@ -412,6 +529,11 @@ Quick trivia: coffee in Puerto Rico historically thrived more in the cooler upla
     },
     summary: {
       en: 'A drive-by agricultural landscape near Ciales that marks the transition from the highlands toward the north.',
+    },
+    soundscape: {
+      type: 'forest',
+      durationSeconds: 18,
+      en: '/audio/en/ambience/ciales-coffee-ridges.wav',
     },
     audio: {
       en: '/audio/en/pois/ciales-coffee-ridges.mp3',
@@ -444,6 +566,11 @@ Quick trivia: Puerto Rico has only one major type of landscape from coast to int
     summary: {
       en: 'A drive-by ecology segment about Puerto Rico’s compressed life zones, wildlife, and the rapid transitions that define the island’s beauty.',
     },
+    soundscape: {
+      type: 'forest',
+      durationSeconds: 18,
+      en: '/audio/en/ambience/biodiversity-bridge-corridor.wav',
+    },
     audio: {
       en: '/audio/en/pois/biodiversity-bridge-corridor.mp3',
     },
@@ -474,6 +601,11 @@ Multiple-choice trivia: what are Puerto Rico's steep karst hills often called? A
     },
     summary: {
       en: 'A drive-by karst waypoint that introduces the limestone landforms shaping north-central Puerto Rico.',
+    },
+    soundscape: {
+      type: 'mountain',
+      durationSeconds: 18,
+      en: '/audio/en/ambience/north-karst-window.wav',
     },
     audio: {
       en: '/audio/en/pois/north-karst-window.mp3',
@@ -576,6 +708,11 @@ Quick trivia: the word Boricua echoes an older Indigenous name for the island. T
     summary: {
       en: 'A late-route cultural synthesis about Boricua identity and the intertwined Indigenous, Spanish, African, and modern layers of Puerto Rican life.',
     },
+    soundscape: {
+      type: 'celebration',
+      durationSeconds: 18,
+      en: '/audio/en/ambience/cultural-mosaic-corridor.wav',
+    },
     audio: {
       en: '/audio/en/pois/cultural-mosaic-corridor.mp3',
     },
@@ -607,6 +744,11 @@ Quick trivia: was Caparra founded before or after Old San Juan became the main c
     summary: {
       en: "The archaeological remains of Puerto Rico's first Spanish settlement, founded in 1508 and later abandoned in favor of Old San Juan.",
     },
+    soundscape: {
+      type: 'ceremonial',
+      durationSeconds: 18,
+      en: '/audio/en/ambience/caparra-ruins.wav',
+    },
     audio: {
       en: '/audio/en/pois/caparra-ruins.mp3',
     },
@@ -614,7 +756,7 @@ Quick trivia: was Caparra founded before or after Old San Juan became the main c
 ];
 
 export const routeWaypoints = [
-  { lat: 18.4655, lng: -66.1057 },
+  { lat: 18.4463, lng: -66.0628 },
   { lat: 18.2395442, lng: -66.0622302 },
   { lat: 18.128, lng: -66.158 },
   { lat: 18.0525, lng: -66.5066 },
@@ -622,7 +764,7 @@ export const routeWaypoints = [
   { lat: 18.2171404, lng: -66.5731355 },
   { lat: 18.4618977, lng: -66.4467585 },
   { lat: 18.405187, lng: -66.1136498 },
-  { lat: 18.4655, lng: -66.1057 },
+  { lat: 18.4463, lng: -66.0628 },
 ];
 
 export const routeWaypointLabels = [
@@ -633,7 +775,7 @@ export const routeWaypointLabels = [
   'La Piedra Escrita',
   'Laguna Tortuguero',
   'Ruinas de Caparra',
-  'San Juan',
+  'Santurce',
 ];
 
 export default pois;
