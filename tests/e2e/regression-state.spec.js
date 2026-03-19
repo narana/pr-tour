@@ -72,4 +72,18 @@ test.describe('Regression: reset and saved state', () => {
     await expect(page.getByTestId('external-navigation-mode-note')).toHaveCount(0);
     await expect.poll(async () => (await readStoredState(page))?.externalNavigationMode).toBe(false);
   });
+
+  test('jumping ahead in the harness marks earlier POIs as visited', async ({ page }) => {
+    await launchHarness(page);
+
+    await page.getByTestId('harness-collapse-toggle').click();
+    await expect(page.getByTestId('harness-selected-poi')).toContainText('Selected:');
+
+    await page.getByTestId('harness-next-poi').click();
+
+    await expect.poll(async () => {
+      const storedState = await readStoredState(page);
+      return storedState?.visitedPOIs?.length || 0;
+    }).toBeGreaterThan(0);
+  });
 });

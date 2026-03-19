@@ -1,6 +1,8 @@
-import { useEffect, useRef } from 'react';
+import { useEffect, useMemo, useRef } from 'react';
 import { haversineDistance } from '../utils/geo';
 import { useTour } from '../context/TourContext';
+import routeData from '../data/routeData.json';
+import { findNearestPointIndex, getPOIProgress, getVisitedPOIIdsAtRouteIndex } from '../utils/route';
 
 /**
  * Monitors user position against all POI geofences.
@@ -13,16 +15,28 @@ import { useTour } from '../context/TourContext';
 export default function useProximity(position) {
   const { state, dispatch, pois } = useTour();
   const lastTriggerTimeRef = useRef({});
+  const geometry = routeData.geometry || [];
+  const poiProgress = useMemo(() => getPOIProgress(pois, geometry), [geometry, pois]);
 
   useEffect(() => {
     if (!position || state.isPaused || state.screen !== 'active') return;
 
     const now = Date.now();
     const COOLDOWN_MS = 10 * 60 * 1000; // 10 minutes between re-triggers (PRD POI-07)
+    const nearestRoutePoint = geometry.length ? findNearestPointIndex(position, geometry) : null;
+
+    if (nearestRoutePoint) {
+      const passedPOIIds = getVisitedPOIIdsAtRouteIndex(poiProgress, nearestRoutePoint.index);
+      const untrackedPassedPOIIds = passedPOIIds.filter((poiId) => !state.visitedPOIs.includes(poiId));
+
+      if (untrackedPassedPOIIds.length > 0) {
+        dispatch({ type: 'VISIT_POIS', payload: untrackedPassedPOIIds });
+      }
+    }
 
     for (const poi of pois) {
       // Skip already triggered this session
-      if (state.triggeredPOIs.includes(poi.id)) continue;
+      if (state.triggeredPOIs.includes(poi.id) || state.visitedPOIs.includes(poi.id)) continue;
 
       // Cooldown check
       const lastTrigger = lastTriggerTimeRef.current[poi.id];
@@ -36,5 +50,5 @@ export default function useProximity(position) {
         break; // Only trigger one POI at a time
       }
     }
-  }, [position, state.isPaused, state.screen, state.triggeredPOIs, dispatch, pois]);
+  }, [dispatch, geometry, poiProgress, pois, position, state.isPaused, state.screen, state.triggeredPOIs, state.visitedPOIs]);
 }

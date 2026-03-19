@@ -50,6 +50,12 @@ export function getPOIProgress(pois, geometry = routeData.geometry) {
   }));
 }
 
+export function getVisitedPOIIdsAtRouteIndex(poiProgress, routeIndex) {
+  return poiProgress
+    .filter((poi) => poi.routeIndex < routeIndex)
+    .map((poi) => poi.id);
+}
+
 export function getStartConfigFromPosition(position, pois, options = {}) {
   const geometry = options.geometry || routeData.geometry || [];
   const steps = options.steps || routeData.steps || [];
@@ -58,9 +64,7 @@ export function getStartConfigFromPosition(position, pois, options = {}) {
   const nearestRoutePoint = findNearestPointIndex(position, geometry);
   const nearestStep = findNearestPointIndex(position, steps.map((step) => step.coordinates));
   const poiProgress = getPOIProgress(pois, geometry);
-  const visitedPOIs = poiProgress
-    .filter((poi) => poi.routeIndex < nearestRoutePoint.index)
-    .map((poi) => poi.id);
+  const visitedPOIs = getVisitedPOIIdsAtRouteIndex(poiProgress, nearestRoutePoint.index);
   const nextPOI = poiProgress.find((poi) => poi.routeIndex >= nearestRoutePoint.index) || null;
   const nearestStepData = steps[clampIndex(nearestStep.index, steps.length - 1)] || null;
 

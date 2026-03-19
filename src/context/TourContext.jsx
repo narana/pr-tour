@@ -84,6 +84,12 @@ function tourReducer(state, action) {
         visitedPOIs: [...new Set([...state.visitedPOIs, action.payload])],
       };
 
+    case 'VISIT_POIS':
+      return {
+        ...state,
+        visitedPOIs: [...new Set([...state.visitedPOIs, ...(action.payload || [])])],
+      };
+
     case 'PAUSE_TOUR':
       return { ...state, isPaused: true, pauseStartTime: Date.now() };
 
