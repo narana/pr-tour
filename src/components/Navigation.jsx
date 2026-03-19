@@ -10,6 +10,7 @@ import TourMap from './TourMap';
 import POIAlert from './POIAlert';
 import PauseScreen from './PauseScreen';
 import ReplayDrawer from './ReplayDrawer';
+import ResetTourButton from './ResetTourButton';
 import { HeritageArtCluster, PuertoRicoFlagArt } from './HeritageArt';
 import { formatDuration } from '../utils/geo';
 import {
@@ -418,6 +419,13 @@ export default function Navigation() {
             </button>
           )}
         </div>
+
+        <ResetTourButton
+          className="navigation__reset-btn"
+          label="Reset Tour"
+          confirmMessage="Clear the current tour state and return to the start screen?"
+          testId="reset-tour-button"
+        />
       </div>
     </div>
   );

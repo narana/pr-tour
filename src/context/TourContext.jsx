@@ -129,7 +129,10 @@ export function TourProvider({ children }) {
   useEffect(() => {
     if (state.screen === 'active') {
       saveTourState(state);
+      return;
     }
+
+    clearTourState();
   }, [
     state.visitedPOIs,
     state.triggeredPOIs,

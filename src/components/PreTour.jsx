@@ -2,11 +2,13 @@ import { useMemo, useState } from 'react';
 import { useTour } from '../context/TourContext';
 import useGeolocation from '../hooks/useGeolocation';
 import useTTS from '../hooks/useTTS';
+import routeData from '../data/routeData.json';
 import TourMap from './TourMap';
 import { HeritageArtCluster } from './HeritageArt';
 import pois from '../data/pois';
 import { formatDistance } from '../utils/geo';
 import { buildRouteRecoveryLabel, getStartConfigFromPosition, launchGoogleMapsNavigation } from '../utils/route';
+import ResetTourButton from './ResetTourButton';
 
 export default function PreTour() {
   const { dispatch } = useTour();
@@ -76,6 +78,7 @@ export default function PreTour() {
 
   const totalStops = pois.length;
   const routeRecoveryLabel = buildRouteRecoveryLabel(startConfig);
+  const routeKilometers = Math.round((routeData.summary?.distanceMeters || 0) / 1000);
 
   return (
     <div className="pre-tour">
@@ -92,7 +95,7 @@ export default function PreTour() {
       <div className="pre-tour__info">
         <div className="pre-tour__stats">
           <div className="pre-tour__stat">
-            <div className="pre-tour__stat-value">~208</div>
+            <div className="pre-tour__stat-value">~{routeKilometers}</div>
             <div className="pre-tour__stat-label">Kilometers</div>
           </div>
           <div className="pre-tour__stat">
@@ -208,6 +211,13 @@ export default function PreTour() {
         <button className="pre-tour__secondary-btn pre-tour__secondary-btn--harness" onClick={handleLaunchHarness} data-testid="launch-harness-button">
           Launch Test Harness
         </button>
+
+        <ResetTourButton
+          className="pre-tour__reset-btn"
+          label="Clear Saved Progress"
+          confirmMessage="Clear any saved tour progress and return to a fresh start screen?"
+          testId="clear-tour-state-button"
+        />
       </div>
     </div>
   );

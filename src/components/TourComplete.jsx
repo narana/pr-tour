@@ -1,10 +1,12 @@
 import React from 'react';
 import { useTour } from '../context/TourContext';
+import routeData from '../data/routeData.json';
 import { HeritageArtCluster } from './HeritageArt';
 import { formatDuration } from '../utils/geo';
 
 export default function TourComplete() {
   const { state, dispatch, totalPOIs, visitedCount, saltoVisited } = useTour();
+  const routeKilometers = Math.round((routeData.summary?.distanceMeters || 0) / 1000);
 
   const handleRestart = () => {
     dispatch({ type: 'RESTART_TOUR' });
@@ -29,7 +31,7 @@ export default function TourComplete() {
           <div className="tour-complete__stat-label">Total Time</div>
         </div>
         <div className="tour-complete__stat">
-          <div className="tour-complete__stat-value">~208</div>
+          <div className="tour-complete__stat-value">~{routeKilometers}</div>
           <div className="tour-complete__stat-label">Km Driven</div>
         </div>
         <div className="tour-complete__stat">

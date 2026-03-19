@@ -27,10 +27,12 @@
   --radius-sm: 8px;
   --shadow: 0 10px 24px rgba(0, 56, 168, 0.12);
   --shadow-lg: 0 22px 44px rgba(0, 56, 168, 0.18);
+  --safe-area-bottom: env(safe-area-inset-bottom, 0px);
 }
 
 html, body, #root {
   height: 100%;
+  min-height: 100%;
   width: 100%;
   overflow: hidden;
   font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
@@ -118,8 +120,11 @@ button {
 /* === Pre-Tour Screen === */
 .pre-tour {
   height: 100%;
+  min-height: 100vh;
+  min-height: 100dvh;
   display: flex;
   flex-direction: column;
+  overflow-y: auto;
   background:
     radial-gradient(circle at top right, rgba(237, 0, 0, 0.12), transparent 24%),
     radial-gradient(circle at bottom left, rgba(0, 80, 240, 0.14), transparent 28%),
@@ -178,7 +183,7 @@ button {
 }
 
 .pre-tour__info {
-  padding: 16px 20px;
+  padding: 16px 20px calc(16px + var(--safe-area-bottom));
 }
 
 .pre-tour__stats {
@@ -309,6 +314,16 @@ button {
   margin-top: 10px;
 }
 
+.pre-tour__reset-btn {
+  width: 100%;
+  margin-top: 10px;
+  padding: 12px 16px;
+  border-radius: var(--radius);
+  background: transparent;
+  color: var(--color-text-muted);
+  border: 1px dashed rgba(0, 56, 168, 0.24);
+}
+
 .pre-tour__test-toggle {
   display: flex;
   align-items: center;
@@ -363,9 +378,12 @@ button {
 /* === Active Navigation === */
 .navigation {
   height: 100%;
+  min-height: 100vh;
+  min-height: 100dvh;
   display: flex;
   flex-direction: column;
   position: relative;
+  overflow: hidden;
   background: linear-gradient(180deg, #f8faff 0%, #eef3ff 100%);
 }
 
@@ -388,7 +406,7 @@ button {
   position: absolute;
   left: 16px;
   right: 16px;
-  bottom: 92px;
+  bottom: calc(92px + var(--safe-area-bottom));
   z-index: 1000;
   display: flex;
   flex-direction: column;
@@ -489,7 +507,7 @@ button {
 .navigation__recenter-btn {
   position: absolute;
   right: 16px;
-  bottom: 144px;
+  bottom: calc(144px + var(--safe-area-bottom));
   z-index: 1400;
   padding: 10px 14px;
   border-radius: 999px;
@@ -588,11 +606,11 @@ button {
 
 @media (max-width: 540px) {
   .navigation__android-dock {
-    bottom: 104px;
+    bottom: calc(104px + var(--safe-area-bottom));
   }
 
   .navigation__recenter-btn {
-    bottom: 156px;
+    bottom: calc(156px + var(--safe-area-bottom));
   }
 
   .navigation__android-primary,
@@ -610,7 +628,7 @@ button {
 .navigation__bottom-bar {
   background:
     linear-gradient(180deg, rgba(255, 255, 255, 0.96) 0%, rgba(242, 246, 255, 0.98) 100%);
-  padding: 12px 16px;
+  padding: 12px 16px calc(12px + var(--safe-area-bottom));
   box-shadow: 0 -10px 24px rgba(0, 56, 168, 0.14);
   z-index: 1000;
   border-top: 4px solid var(--flag-red);
@@ -690,6 +708,17 @@ button {
   display: flex;
   gap: 10px;
   flex-wrap: wrap;
+}
+
+.navigation__reset-btn {
+  width: 100%;
+  margin-top: 10px;
+  padding: 12px 14px;
+  border-radius: var(--radius-sm);
+  background: transparent;
+  color: var(--color-text-muted);
+  border: 1px dashed rgba(0, 56, 168, 0.22);
+  font-weight: 600;
 }
 
 .navigation__pause-btn {
@@ -891,14 +920,28 @@ button {
   border-radius: var(--radius);
 }
 
+.pause-screen__reset-btn {
+  width: 100%;
+  margin-top: 10px;
+  padding: 12px;
+  background: transparent;
+  color: var(--color-text-muted);
+  border-radius: var(--radius);
+  border: 1px dashed rgba(0, 56, 168, 0.22);
+  font-size: 0.9rem;
+  font-weight: 600;
+}
+
 /* === Tour Complete === */
 .tour-complete {
   height: 100%;
+  min-height: 100vh;
+  min-height: 100dvh;
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  padding: 24px;
+  padding: 24px 24px calc(24px + var(--safe-area-bottom));
   text-align: center;
   background:
     radial-gradient(circle at top left, rgba(0, 80, 240, 0.14), transparent 26%),

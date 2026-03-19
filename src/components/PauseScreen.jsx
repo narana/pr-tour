@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useTour } from '../context/TourContext';
 import useTTS from '../hooks/useTTS';
+import ResetTourButton from './ResetTourButton';
 import { formatDuration } from '../utils/geo';
 
 export default function PauseScreen() {
@@ -58,6 +59,13 @@ export default function PauseScreen() {
             Replay Last Narration
           </button>
         )}
+
+        <ResetTourButton
+          className="pause-screen__reset-btn"
+          label="Clear Tour Progress"
+          confirmMessage="Clear the paused tour and return to the start screen?"
+          testId="pause-screen-reset-button"
+        />
       </div>
     </div>
   );
