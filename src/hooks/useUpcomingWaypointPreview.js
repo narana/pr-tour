@@ -6,15 +6,25 @@ import { haversineDistance } from '../utils/geo';
 import { findNearestPointIndex, getPOIProgress } from '../utils/route';
 
 const MIN_PREVIEW_LEAD_METERS = 120;
-const PREVIEW_COMPLETION_BUFFER_SECONDS = 6;
-const PREVIEW_TRAVEL_SPEED_METERS_PER_SECOND = 13.5;
+const PREVIEW_COMPLETION_BUFFER_SECONDS = 8;
+const SIMULATION_BENCHMARK_MULTIPLIER = 2;
 
-function estimatePreviewRunwayMeters(text, externalNavigationMode) {
+function buildCumulativeRouteDistances(geometry) {
+  const cumulativeDistances = [0];
+
+  for (let index = 1; index < geometry.length; index += 1) {
+    cumulativeDistances[index] = cumulativeDistances[index - 1] + haversineDistance(geometry[index - 1], geometry[index]);
+  }
+
+  return cumulativeDistances;
+}
+
+function estimatePreviewRunwayMeters(text, externalNavigationMode, benchmarkSpeedMetersPerSecond) {
   const words = text.trim().split(/\s+/).filter(Boolean).length;
   const spokenSeconds = Math.max(8, words / 2.4);
   const leadInSeconds = externalNavigationMode ? EXTERNAL_NAVIGATION_AUDIO_LEAD_IN_MS / 1000 : 0;
   const totalSeconds = spokenSeconds + leadInSeconds + PREVIEW_COMPLETION_BUFFER_SECONDS;
-  return Math.ceil(totalSeconds * PREVIEW_TRAVEL_SPEED_METERS_PER_SECOND);
+  return Math.ceil(totalSeconds * benchmarkSpeedMetersPerSecond);
 }
 
 function buildPreviewAudioSrc(id) {
@@ -26,6 +36,12 @@ export default function useUpcomingWaypointPreview(position) {
   const { speak, isSupported } = useTTS();
   const announcedPreviewsRef = useRef(new Set());
   const geometry = routeData.geometry || [];
+  const benchmarkSpeedMetersPerSecond = useMemo(() => {
+    const routeDurationSeconds = routeData.summary?.durationSeconds || 1;
+    const routeDistanceMeters = routeData.summary?.distanceMeters || 0;
+    return (routeDistanceMeters / routeDurationSeconds) * SIMULATION_BENCHMARK_MULTIPLIER;
+  }, []);
+  const cumulativeRouteDistances = useMemo(() => buildCumulativeRouteDistances(geometry), [geometry]);
 
   const poiProgress = useMemo(() => {
     return getPOIProgress(pois, geometry).sort((left, right) => left.routeIndex - right.routeIndex);
@@ -65,12 +81,20 @@ export default function useUpcomingWaypointPreview(position) {
     }
 
     const distanceMeters = haversineDistance(position, nextWaypoint.coordinates);
-    const requiredRunwayMeters = estimatePreviewRunwayMeters(nextWaypoint.preview.en, state.externalNavigationMode);
+    const remainingRouteDistanceMeters = Math.max(
+      0,
+      (cumulativeRouteDistances[nextWaypoint.routeIndex] || 0) - (cumulativeRouteDistances[nearestRoutePoint.index] || 0),
+    );
+    const requiredRunwayMeters = estimatePreviewRunwayMeters(
+      nextWaypoint.preview.en,
+      state.externalNavigationMode,
+      benchmarkSpeedMetersPerSecond,
+    );
     const previewRadiusMeters = nextWaypoint.previewRadiusMeters
-      || Math.max((nextWaypoint.triggerRadiusMeters || 450) * 3, requiredRunwayMeters + 240, 1800);
+      || Math.max((nextWaypoint.triggerRadiusMeters || 450) * 5, requiredRunwayMeters + 400, 2600);
     const minimumDistance = (nextWaypoint.triggerRadiusMeters || 450) + Math.max(MIN_PREVIEW_LEAD_METERS, requiredRunwayMeters);
 
-    if (distanceMeters > previewRadiusMeters || distanceMeters <= minimumDistance) {
+    if (remainingRouteDistanceMeters > previewRadiusMeters || remainingRouteDistanceMeters <= minimumDistance || distanceMeters <= (nextWaypoint.triggerRadiusMeters || 450)) {
       return;
     }
 
@@ -79,5 +103,5 @@ export default function useUpcomingWaypointPreview(position) {
       audioSrc: buildPreviewAudioSrc(nextWaypoint.id),
       ambienceSrc: nextWaypoint.soundscape?.en,
     });
-  }, [geometry, isSupported, poiProgress, position, speak, state.activePOI, state.externalNavigationMode, state.isPaused, state.screen, state.triggeredPOIs, state.visitedPOIs, state.volumeOn]);
+  }, [benchmarkSpeedMetersPerSecond, cumulativeRouteDistances, geometry, isSupported, poiProgress, position, speak, state.activePOI, state.externalNavigationMode, state.isPaused, state.screen, state.triggeredPOIs, state.visitedPOIs, state.volumeOn]);
 }
