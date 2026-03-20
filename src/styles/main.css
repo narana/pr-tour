@@ -11,6 +11,8 @@
   --flag-blue-soft: #dbe7ff;
   --flag-red: #ed0000;
   --flag-red-soft: #ffe1e1;
+  --color-button-text-strong: #0d1b3d;
+  --color-button-border-strong: rgba(13, 27, 61, 0.18);
   --color-primary: var(--flag-blue);
   --color-primary-light: #4b86ff;
   --color-primary-dark: var(--flag-blue-dark);
@@ -50,6 +52,71 @@ button {
   border: none;
   font-family: inherit;
   font-size: inherit;
+}
+
+button,
+a {
+  -webkit-tap-highlight-color: transparent;
+}
+
+button:focus-visible,
+a:focus-visible {
+  outline: 3px solid rgba(0, 80, 240, 0.28);
+  outline-offset: 2px;
+}
+
+.status-toast-region {
+  position: absolute;
+  top: 14px;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 1700;
+  width: min(calc(100% - 24px), 540px);
+  pointer-events: none;
+}
+
+.status-toast {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 12px 14px;
+  border-radius: 18px;
+  border: 1px solid rgba(255, 255, 255, 0.5);
+  box-shadow: 0 20px 34px rgba(8, 22, 61, 0.24);
+  color: #ffffff;
+  -webkit-backdrop-filter: blur(14px);
+  backdrop-filter: blur(14px);
+  pointer-events: auto;
+}
+
+.status-toast--info {
+  background: linear-gradient(135deg, rgba(0, 56, 168, 0.94) 0%, rgba(0, 80, 240, 0.88) 62%, rgba(237, 0, 0, 0.78) 100%);
+}
+
+.status-toast--success {
+  background: linear-gradient(135deg, rgba(7, 92, 58, 0.96) 0%, rgba(34, 125, 83, 0.92) 100%);
+}
+
+.status-toast--warning {
+  background: linear-gradient(135deg, rgba(126, 65, 10, 0.96) 0%, rgba(186, 98, 20, 0.92) 100%);
+}
+
+.status-toast__message {
+  font-size: 0.88rem;
+  line-height: 1.35;
+  font-weight: 700;
+}
+
+.status-toast__dismiss {
+  flex-shrink: 0;
+  width: 32px;
+  height: 32px;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.18);
+  color: #ffffff;
+  font-size: 1.15rem;
+  font-weight: 700;
 }
 
 .heritage-art {
@@ -298,10 +365,10 @@ button {
   width: 100%;
   padding: 14px 16px;
   background: linear-gradient(180deg, rgba(255, 255, 255, 0.96) 0%, rgba(233, 240, 255, 0.92) 100%);
-  color: var(--color-primary-dark);
+  color: var(--color-button-text-strong);
   font-weight: 600;
   border-radius: var(--radius);
-  border: 1px solid rgba(0, 80, 240, 0.16);
+  border: 1px solid var(--color-button-border-strong);
   box-shadow: var(--shadow);
 }
 
@@ -320,8 +387,9 @@ button {
   padding: 12px 16px;
   border-radius: var(--radius);
   background: transparent;
-  color: var(--color-text-muted);
-  border: 1px dashed rgba(0, 56, 168, 0.24);
+  color: var(--color-button-text-strong);
+  border: 1px dashed rgba(13, 27, 61, 0.28);
+  background: rgba(255, 255, 255, 0.72);
 }
 
 .pre-tour__test-toggle {
@@ -460,27 +528,6 @@ button {
   opacity: 0.82;
 }
 
-.navigation__android-status {
-  margin-top: 10px;
-  border-radius: 999px;
-  padding: 8px 10px;
-  font-size: 0.78rem;
-  font-weight: 600;
-}
-
-.navigation__android-status--neutral,
-.navigation__android-status--info {
-  background: rgba(255, 255, 255, 0.16);
-}
-
-.navigation__android-status--success {
-  background: rgba(45, 138, 86, 0.24);
-}
-
-.navigation__android-status--warning {
-  background: rgba(232, 168, 56, 0.24);
-}
-
 .navigation__android-primary,
 .navigation__android-secondary {
   pointer-events: auto;
@@ -498,11 +545,13 @@ button {
 .navigation__android-primary {
   background: linear-gradient(135deg, var(--flag-red) 0%, #c30000 100%);
   color: white;
+  text-shadow: 0 1px 0 rgba(0, 0, 0, 0.22);
 }
 
 .navigation__android-secondary {
   background: rgba(255, 255, 255, 0.98);
-  color: var(--color-primary-dark);
+  color: var(--color-button-text-strong);
+  border: 1px solid var(--color-button-border-strong);
 }
 
 .navigation__android-secondary--button {
@@ -552,19 +601,6 @@ button {
   opacity: 0.98;
 }
 
-.navigation__external-mode-badge {
-  display: inline-flex;
-  align-items: center;
-  margin-bottom: 8px;
-  padding: 6px 10px;
-  border-radius: 999px;
-  background: rgba(255, 255, 255, 0.16);
-  font-size: 0.72rem;
-  font-weight: 700;
-  letter-spacing: 0.06em;
-  text-transform: uppercase;
-}
-
 .navigation__next-turn {
   font-size: 0.8rem;
   opacity: 0.85;
@@ -603,23 +639,22 @@ button {
 }
 
 .navigation__mode-btn {
-  border: none;
-}
-
-.navigation__mode-btn {
-  background: rgba(255, 255, 255, 0.18);
-  color: white;
+  background: rgba(255, 255, 255, 0.94);
+  color: var(--color-button-text-strong);
+  border: 1px solid var(--color-button-border-strong);
+  box-shadow: 0 8px 18px rgba(8, 22, 61, 0.12);
 }
 
 .navigation__google-btn {
   background: white;
-  color: var(--color-primary-dark);
+  color: var(--color-button-text-strong);
+  border: 1px solid var(--color-button-border-strong);
 }
 
 .navigation__secondary-chip {
   background: rgba(255, 255, 255, 0.9);
-  color: var(--color-text);
-  border: 1px solid var(--color-border);
+  color: var(--color-button-text-strong);
+  border: 1px solid var(--color-button-border-strong);
 }
 
 @media (max-width: 540px) {
@@ -693,7 +728,7 @@ button {
   border-radius: 999px;
   border: 1px solid rgba(0, 56, 168, 0.18);
   background: rgba(255, 255, 255, 0.92);
-  color: var(--color-text);
+  color: var(--color-button-text-strong);
   font-size: 0.78rem;
   font-weight: 700;
   white-space: nowrap;
@@ -703,6 +738,7 @@ button {
   background: linear-gradient(135deg, rgba(0, 56, 168, 0.92) 0%, rgba(29, 92, 214, 0.9) 100%);
   border-color: transparent;
   color: white;
+  box-shadow: 0 12px 22px rgba(0, 56, 168, 0.22);
 }
 
 @media (max-width: 540px) {
@@ -714,17 +750,6 @@ button {
   .navigation__external-toggle {
     width: 100%;
   }
-}
-
-.navigation__external-mode-note {
-  margin-bottom: 10px;
-  padding: 10px 12px;
-  border-radius: var(--radius-sm);
-  background: linear-gradient(180deg, rgba(229, 238, 255, 0.84) 0%, rgba(255, 255, 255, 0.9) 100%);
-  border: 1px solid var(--color-border);
-  font-size: 0.8rem;
-  color: var(--color-text-muted);
-  line-height: 1.4;
 }
 
 .navigation__harness {
@@ -802,8 +827,9 @@ button {
   padding: 12px 14px;
   border-radius: var(--radius-sm);
   background: transparent;
-  color: var(--color-text-muted);
-  border: 1px dashed rgba(0, 56, 168, 0.22);
+  color: var(--color-button-text-strong);
+  border: 1px dashed rgba(13, 27, 61, 0.28);
+  background: rgba(255, 255, 255, 0.72);
   font-weight: 600;
 }
 
@@ -825,7 +851,8 @@ button {
 .navigation__volume-btn {
   padding: 14px 18px;
   background: var(--color-surface-strong);
-  border: 2px solid var(--color-border);
+  color: var(--color-button-text-strong);
+  border: 2px solid var(--color-button-border-strong);
   border-radius: var(--radius);
   font-size: 1.2rem;
 }
@@ -833,7 +860,8 @@ button {
 .navigation__replay-btn {
   padding: 14px 18px;
   background: var(--color-surface-strong);
-  border: 2px solid var(--color-border);
+  color: var(--color-button-text-strong);
+  border: 2px solid var(--color-button-border-strong);
   border-radius: var(--radius);
   font-size: 1.2rem;
 }
@@ -928,12 +956,14 @@ button {
 
 .poi-alert__btn--secondary {
   background: rgba(233, 241, 255, 0.9);
-  color: var(--color-text);
+  color: var(--color-button-text-strong);
+  border: 1px solid var(--color-button-border-strong);
 }
 
 .poi-alert__btn--skip {
-  background: transparent;
-  color: var(--color-text-muted);
+  background: rgba(255, 255, 255, 0.82);
+  color: var(--color-button-text-strong);
+  border: 1px solid rgba(13, 27, 61, 0.14);
   font-size: 0.85rem;
 }
 
@@ -1000,10 +1030,11 @@ button {
   width: 100%;
   padding: 12px;
   background: rgba(233, 241, 255, 0.92);
-  color: var(--color-text);
+  color: var(--color-button-text-strong);
   font-size: 0.9rem;
   font-weight: 500;
   border-radius: var(--radius);
+  border: 1px solid var(--color-button-border-strong);
 }
 
 .pause-screen__reset-btn {
@@ -1011,11 +1042,12 @@ button {
   margin-top: 10px;
   padding: 12px;
   background: transparent;
-  color: var(--color-text-muted);
+  color: var(--color-button-text-strong);
   border-radius: var(--radius);
-  border: 1px dashed rgba(0, 56, 168, 0.22);
+  border: 1px dashed rgba(13, 27, 61, 0.28);
   font-size: 0.9rem;
   font-weight: 600;
+  background: rgba(255, 255, 255, 0.72);
 }
 
 /* === Tour Complete === */
@@ -1156,11 +1188,13 @@ button {
 }
 
 .replay-drawer__close {
-  background: none;
+  background: rgba(233, 240, 255, 0.8);
   font-size: 1.5rem;
-  color: var(--color-text-muted);
+  color: var(--color-button-text-strong);
   padding: 4px 8px;
   line-height: 1;
+  border: 1px solid rgba(13, 27, 61, 0.12);
+  border-radius: 999px;
 }
 
 .replay-drawer__empty {

@@ -1,5 +1,6 @@
 import { useCallback, useRef, useEffect } from 'react';
 import { useTour } from '../context/TourContext';
+import { normalizePronunciationText } from '../utils/pronunciation';
 
 const SILENT_AUDIO_DATA_URI = 'data:audio/wav;base64,UklGRl4AAABXQVZFZm10IBAAAAABAAEARKwAAIhYAQACABAAZGF0YToAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA=';
 export const EXTERNAL_NAVIGATION_AUDIO_LEAD_IN_MS = 5000;
@@ -45,43 +46,6 @@ export default function useTTS() {
   const pendingPlaybackTimerRef = useRef(null);
   const isSpeechSupportedRef = useRef(typeof window !== 'undefined' && 'speechSynthesis' in window);
   const isSupportedRef = useRef(Boolean(audioRef.current) || isSpeechSupportedRef.current);
-
-  const normalizePronunciationHints = useCallback((text) => {
-    if (!text) return text;
-
-    const replacements = [
-      [/\bJardin Botanico y Cultural de Caguas William Miranda Marin\b/gi, 'Jardín Botánico y Cultural de Caguas William Miranda Marín'],
-      [/\bSan Ramon Nonato\b/gi, 'San Ramón Nonato'],
-      [/\bCarretera Patillas - Cayey\b/gi, 'Carretera Patillas, Cayey'],
-      [/\bCarretera Ciales - Jayuya\b/gi, 'Carretera Ciales, Jayuya'],
-      [/\bCarretera Jacaguas\b/gi, 'Carretera Jacaguas'],
-      [/\bTainos\b/gi, 'Taínos'],
-      [/\bTaino\b/gi, 'Taíno'],
-      [/\bBoriquen\b/gi, 'Borinquén'],
-      [/\bBoriken\b/gi, 'Borikén'],
-      [/\bBoricua\b/gi, 'Boricua'],
-      [/\bcoquis\b/gi, 'coquís'],
-      [/\bcoqui\b/gi, 'coquí'],
-      [/\bCaguas\b/gi, 'Cáguas'],
-      [/\bCayey\b/gi, 'Ca-yey'],
-      [/\bGuavate\b/gi, 'Gua-vah-teh'],
-      [/\bCoamo\b/gi, 'Coámo'],
-      [/\bJayuya\b/gi, 'Ha-yú-ya'],
-      [/\bCoabey\b/gi, 'Coa-bey'],
-      [/\bCiales\b/gi, 'Ciáles'],
-      [/\bCollores\b/gi, 'Coyores'],
-      [/\bJuana Diaz\b/gi, 'Juana Díaz'],
-      [/\bLuis Llorens Torres\b/gi, 'Luis Yórens Torres'],
-      [/\bPonce de Leon\b/gi, 'Ponce de León'],
-      [/\bRincon\b/gi, 'Rincón'],
-      [/\bhuracan\b/gi, 'huracán'],
-      [/\bRio\b/gi, 'Río'],
-    ];
-
-    return replacements.reduce((current, [pattern, replacement]) => {
-      return current.replace(pattern, replacement);
-    }, text);
-  }, []);
 
   const stopAmbience = useCallback(() => {
     if (ambienceRef.current) {
@@ -183,7 +147,7 @@ export default function useTTS() {
   } = {}) => {
     if (!isSpeechSupportedRef.current || !text) return false;
 
-    const normalizedText = normalizePronunciationHints(text);
+    const normalizedText = normalizePronunciationText(text);
 
     window.speechSynthesis.cancel();
 
@@ -232,7 +196,7 @@ export default function useTTS() {
     }
 
     return true;
-  }, [normalizePronunciationHints, startAmbience, stopAmbience]);
+  }, [startAmbience, stopAmbience]);
 
   const speak = useCallback((text, {
     audioSrc,

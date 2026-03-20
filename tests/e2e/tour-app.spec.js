@@ -38,7 +38,7 @@ test.describe('Pre-tour permissions', () => {
 
     await page.getByTestId('guide-to-route-button').click();
     await expect.poll(async () => page.evaluate(() => window.__openedUrls.length)).toBeGreaterThan(0);
-    await expect(page.getByTestId('route-recovery-status')).toContainText(/Google Maps/i);
+    await expect(page.getByTestId('status-toast')).toContainText(/Google Maps/i);
   });
 });
 
@@ -65,13 +65,13 @@ test.describe('Active tour interactions', () => {
     await page.evaluate(() => {
       document.querySelector('[data-testid="google-maps-native-button"]')?.click();
     });
-    await expect(page.getByTestId('google-maps-status')).toContainText(/Opening Google Maps/i);
+    await expect(page.getByTestId('status-toast')).toContainText(/Opening Google Maps/i);
     await expect.poll(async () => page.evaluate(() => window.__openedUrls.length)).toBeGreaterThan(0);
 
     await page.evaluate(() => {
       document.querySelector('[data-testid="copy-destination-button"]')?.click();
     });
-    await expect(page.getByTestId('google-maps-status')).toContainText(/Copied/i);
+    await expect(page.getByTestId('status-toast')).toContainText(/Copied/i);
     await expect.poll(async () => page.evaluate(() => window.__copiedText)).toContain(' - ');
 
     await page.getByTestId('harness-preview-poi').click({ force: true });

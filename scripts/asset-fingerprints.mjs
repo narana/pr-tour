@@ -1,4 +1,5 @@
 import { createHash } from 'node:crypto';
+import pronunciationHints from '../src/data/pronunciationHints.json' with { type: 'json' };
 
 function sha256(value) {
   return createHash('sha256').update(value).digest('hex');
@@ -26,8 +27,9 @@ export function buildAudioSourceFingerprint({ pois, routeSteps, voiceProfiles })
       instruction: step.instruction,
       audioSrc: step.audioSrc,
     })),
+    pronunciationHints,
     voiceProfiles,
-    generatorVersion: 1,
+    generatorVersion: 4,
   }));
 }
 

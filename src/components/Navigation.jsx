@@ -11,6 +11,7 @@ import POIAlert from './POIAlert';
 import PauseScreen from './PauseScreen';
 import ReplayDrawer from './ReplayDrawer';
 import ResetTourButton from './ResetTourButton';
+import StatusToast from './StatusToast';
 import { HeritageArtCluster, PuertoRicoFlagArt } from './HeritageArt';
 import { formatDuration, haversineDistance } from '../utils/geo';
 import {
@@ -32,8 +33,7 @@ export default function Navigation() {
   const [drivingView, setDrivingView] = useState(true);
   const [harnessCollapsed, setHarnessCollapsed] = useState(true);
   const [androidOptimized] = useState(() => isAndroidDevice());
-  const [navigationHandoffMessage, setNavigationHandoffMessage] = useState('');
-  const [navigationHandoffVariant, setNavigationHandoffVariant] = useState('neutral');
+  const [statusToast, setStatusToast] = useState(null);
   const poiProgress = useMemo(() => getPOIProgress(pois), [pois]);
   const [selectedTestPOIIndex, setSelectedTestPOIIndex] = useState(0);
 
@@ -101,44 +101,55 @@ export default function Navigation() {
   };
 
   const handleToggleExternalNavigationMode = () => {
-    dispatch({ type: 'SET_EXTERNAL_NAVIGATION_MODE', payload: !state.externalNavigationMode });
+    const enabled = !state.externalNavigationMode;
+    dispatch({ type: 'SET_EXTERNAL_NAVIGATION_MODE', payload: enabled });
+    setStatusToast({
+      message: enabled
+        ? 'Android Auto mode enabled. Google Maps handles turns while this app keeps POI narration active.'
+        : 'Android Auto mode disabled. In-app turn guidance is active again.',
+      variant: enabled ? 'info' : 'success',
+    });
   };
 
   useEffect(() => {
-    if (!navigationHandoffMessage) {
+    if (!statusToast?.message) {
       return undefined;
     }
 
     const timer = window.setTimeout(() => {
-      setNavigationHandoffMessage('');
-      setNavigationHandoffVariant('neutral');
+      setStatusToast(null);
     }, 2800);
 
     return () => {
       window.clearTimeout(timer);
     };
-  }, [navigationHandoffMessage]);
+  }, [statusToast]);
 
   const handleLaunchGoogleMaps = () => {
     if (!nextDestination) return;
 
     launchGoogleMapsNavigation(nextDestination, {
       onAttempt: (mode) => {
-        setNavigationHandoffVariant('info');
-        setNavigationHandoffMessage(
+        setStatusToast({
+          message:
           mode === 'native'
             ? `Opening Google Maps turn-by-turn for ${nextDestinationLabel}.`
-            : `Opening ${nextDestinationLabel} in Google Maps.`
-        );
+            : `Opening ${nextDestinationLabel} in Google Maps.`,
+          variant: 'info',
+        });
       },
       onFallback: () => {
-        setNavigationHandoffVariant('warning');
-        setNavigationHandoffMessage('Google Maps app did not open, so the route was sent to the browser instead.');
+        setStatusToast({
+          message: 'Google Maps app did not open, so the route was sent to the browser instead.',
+          variant: 'warning',
+        });
       },
       onComplete: (mode) => {
         if (mode === 'web') {
-          setNavigationHandoffVariant('info');
-          setNavigationHandoffMessage(`Google Maps opened for ${nextDestinationLabel}.`);
+          setStatusToast({
+            message: `Google Maps opened for ${nextDestinationLabel}.`,
+            variant: 'info',
+          });
         }
       },
     });
@@ -146,18 +157,15 @@ export default function Navigation() {
 
   const handleCopyDestination = async () => {
     if (!nextDestinationCoordinates || typeof navigator === 'undefined' || !navigator.clipboard?.writeText) {
-      setNavigationHandoffVariant('warning');
-      setNavigationHandoffMessage('Clipboard access is unavailable in this browser.');
+      setStatusToast({ message: 'Clipboard access is unavailable in this browser.', variant: 'warning' });
       return;
     }
 
     try {
       await navigator.clipboard.writeText(`${nextDestinationLabel} - ${nextDestinationCoordinates}`);
-      setNavigationHandoffVariant('success');
-      setNavigationHandoffMessage(`Copied ${nextDestinationLabel} coordinates.`);
+      setStatusToast({ message: `Copied ${nextDestinationLabel} coordinates.`, variant: 'success' });
     } catch {
-      setNavigationHandoffVariant('warning');
-      setNavigationHandoffMessage('Could not copy the destination coordinates.');
+      setStatusToast({ message: 'Could not copy the destination coordinates.', variant: 'warning' });
     }
   };
 
@@ -212,14 +220,11 @@ export default function Navigation() {
 
   return (
     <div className={`navigation${drivingView ? ' navigation--driving' : ''}`} data-testid="navigation-screen">
+      <StatusToast toast={statusToast} onDismiss={() => setStatusToast(null)} />
+
       {/* Top bar — next stop info */}
       <div className="navigation__top-bar">
         <HeritageArtCluster className="navigation__top-art" compact={true} />
-        {state.externalNavigationMode && (
-          <div className="navigation__external-mode-badge" data-testid="external-navigation-mode-badge">
-            Android Auto mode active
-          </div>
-        )}
         {nextPOI ? (
           <>
             <div className="navigation__next-turn">
@@ -279,14 +284,6 @@ export default function Navigation() {
               {nextDestinationLabel}
             </div>
             <div className="navigation__android-summary-copy">{nextDestinationCoordinates}</div>
-            {navigationHandoffMessage && (
-              <div
-                className={`navigation__android-status navigation__android-status--${navigationHandoffVariant}`}
-                data-testid="google-maps-status"
-              >
-                {navigationHandoffMessage}
-              </div>
-            )}
           </div>
           <button
             className="navigation__android-primary"
@@ -366,12 +363,6 @@ export default function Navigation() {
             {state.externalNavigationMode ? 'Android Auto On' : 'Android Auto Off'}
           </button>
         </div>
-
-        {state.externalNavigationMode && (
-          <div className="navigation__external-mode-note" data-testid="external-navigation-mode-note">
-            Google Maps / Android Auto is expected to handle turn-by-turn. POI narration remains active in this app.
-          </div>
-        )}
 
         {state.testMode && (
           <div className="navigation__harness" data-testid="test-harness">

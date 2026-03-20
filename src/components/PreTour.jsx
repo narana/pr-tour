@@ -1,4 +1,4 @@
-import { useMemo, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { useTour } from '../context/TourContext';
 import useGeolocation from '../hooks/useGeolocation';
 import useTTS from '../hooks/useTTS';
@@ -9,6 +9,7 @@ import pois from '../data/pois';
 import { formatDistance } from '../utils/geo';
 import { buildRouteRecoveryLabel, getStartConfigFromPosition, isAndroidDevice, launchGoogleMapsNavigation } from '../utils/route';
 import ResetTourButton from './ResetTourButton';
+import StatusToast from './StatusToast';
 
 export default function PreTour() {
   const { state, dispatch } = useTour();
@@ -16,7 +17,7 @@ export default function PreTour() {
   const { primePlayback } = useTTS();
   const [gpsReady, setGpsReady] = useState(false);
   const [gpsRequesting, setGpsRequesting] = useState(false);
-  const [routeRecoveryStatus, setRouteRecoveryStatus] = useState('');
+  const [statusToast, setStatusToast] = useState(null);
   const [testMode, setTestMode] = useState(false);
 
   const startConfig = useMemo(() => {
@@ -37,18 +38,41 @@ export default function PreTour() {
 
     launchGoogleMapsNavigation(startConfig.nearestRoutePoint, {
       onAttempt: (mode) => {
-        setRouteRecoveryStatus(mode === 'native'
-          ? 'Opening Google Maps driving navigation...'
-          : 'Opening Google Maps directions in your browser...');
+        setStatusToast({
+          message: mode === 'native'
+            ? 'Opening Google Maps driving navigation...'
+            : 'Opening Google Maps directions in your browser...',
+          variant: 'info',
+        });
       },
       onFallback: () => {
-        setRouteRecoveryStatus('Google Maps app did not respond. Opening browser directions instead.');
+        setStatusToast({
+          message: 'Google Maps app did not respond. Opening browser directions instead.',
+          variant: 'warning',
+        });
       },
       onComplete: () => {
-        setRouteRecoveryStatus(`Google Maps launched for ${buildRouteRecoveryLabel(startConfig)}.`);
+        setStatusToast({
+          message: `Google Maps launched for ${buildRouteRecoveryLabel(startConfig)}.`,
+          variant: 'success',
+        });
       },
     });
   };
+
+  useEffect(() => {
+    if (!statusToast?.message) {
+      return undefined;
+    }
+
+    const timer = window.setTimeout(() => {
+      setStatusToast(null);
+    }, 2800);
+
+    return () => {
+      window.clearTimeout(timer);
+    };
+  }, [statusToast]);
 
   const handleStart = async () => {
     await primePlayback();
@@ -83,6 +107,8 @@ export default function PreTour() {
 
   return (
     <div className="pre-tour">
+      <StatusToast toast={statusToast} onDismiss={() => setStatusToast(null)} />
+
       <div className="pre-tour__header">
         <HeritageArtCluster className="pre-tour__hero-art" />
         <h1 className="pre-tour__title">Puerto Rico Heritage &amp; Nature Tour</h1>
@@ -152,7 +178,14 @@ export default function PreTour() {
             data-testid="external-navigation-mode-checkbox"
             checked={state.externalNavigationMode}
             onChange={(event) => {
-              dispatch({ type: 'SET_EXTERNAL_NAVIGATION_MODE', payload: event.target.checked });
+              const enabled = event.target.checked;
+              dispatch({ type: 'SET_EXTERNAL_NAVIGATION_MODE', payload: enabled });
+              setStatusToast({
+                message: enabled
+                  ? 'Android Auto mode enabled. Google Maps will handle turns while this app keeps POI narration active.'
+                  : 'Android Auto mode disabled. In-app turn guidance will stay active.',
+                variant: enabled ? 'info' : 'success',
+              });
             }}
           />
           <span>
@@ -183,9 +216,7 @@ export default function PreTour() {
                 >
                   Guide Me To Route Entry
                 </button>
-                <div className="pre-tour__route-lock-meta" data-testid="route-recovery-status">
-                  {routeRecoveryStatus || `Nearest route entry: ${routeRecoveryLabel}`}
-                </div>
+                <div className="pre-tour__route-lock-meta">Nearest route entry: {routeRecoveryLabel}</div>
               </div>
             )}
           </div>

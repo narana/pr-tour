@@ -58,8 +58,7 @@ test.describe('Regression: reset and saved state', () => {
 
     await toggle.click();
     await expect(toggle).toHaveAttribute('aria-pressed', 'true');
-    await expect(page.getByTestId('external-navigation-mode-badge')).toBeVisible();
-    await expect(page.getByTestId('external-navigation-mode-note')).toBeVisible();
+    await expect(page.getByTestId('status-toast')).toContainText(/Android Auto mode enabled/i);
     await expect.poll(async () => (await readStoredState(page))?.externalNavigationMode).toBe(true);
 
     await page.reload();
@@ -68,8 +67,7 @@ test.describe('Regression: reset and saved state', () => {
 
     await page.getByTestId('active-tour-external-navigation-toggle').click();
     await expect(page.getByTestId('active-tour-external-navigation-toggle')).toHaveAttribute('aria-pressed', 'false');
-    await expect(page.getByTestId('external-navigation-mode-badge')).toHaveCount(0);
-    await expect(page.getByTestId('external-navigation-mode-note')).toHaveCount(0);
+    await expect(page.getByTestId('status-toast')).toContainText(/Android Auto mode disabled/i);
     await expect.poll(async () => (await readStoredState(page))?.externalNavigationMode).toBe(false);
   });
 

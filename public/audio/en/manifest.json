@@ -1,7 +1,7 @@
 {
-  "generatedAt": "2026-03-19T21:13:20.895Z",
+  "generatedAt": "2026-03-20T01:03:56.260Z",
   "routeFingerprint": "6a64c427e5d3fdb53ca62660d688ac677191e709c5d6c47c4eb9bd6525434a86",
-  "audioFingerprint": "e39e3b7ffe29925ac5621098594d36df3b77fd41d0c94ac7e76a4ffa2e837118",
+  "audioFingerprint": "01fa47c991895acab4e6676dbf5e101dbfd35f4bd819a8b5ec5a24827a03f031",
   "expectedFiles": [
     "public/audio/en/ambience/balneario-de-salinas.wav",
     "public/audio/en/ambience/balneario-puerto-nuevo.wav",

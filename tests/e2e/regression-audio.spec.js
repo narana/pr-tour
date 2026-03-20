@@ -63,8 +63,7 @@ test.describe('Regression: audio playback paths', () => {
     await page.getByTestId('harness-collapse-toggle').click();
 
     await expect(page.getByTestId('navigation-screen')).toBeVisible();
-    await expect(page.getByTestId('external-navigation-mode-badge')).toBeVisible();
-    await expect(page.getByTestId('external-navigation-mode-note')).toContainText(/POI narration remains active/i);
+    await expect(page.getByTestId('active-tour-external-navigation-toggle')).toHaveAttribute('aria-pressed', 'true');
 
     const storedState = await page.evaluate(() => JSON.parse(localStorage.getItem('pr-driving-tour-state') || 'null'));
     expect(storedState?.externalNavigationMode).toBe(true);
@@ -92,6 +91,6 @@ test.describe('Regression: audio playback paths', () => {
 
     await page.reload();
     await expect(page.getByTestId('navigation-screen')).toBeVisible();
-    await expect(page.getByTestId('external-navigation-mode-badge')).toBeVisible();
+    await expect(page.getByTestId('active-tour-external-navigation-toggle')).toHaveAttribute('aria-pressed', 'true');
   });
 });

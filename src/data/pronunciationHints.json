@@ -1,0 +1,280 @@
+[
+  {
+    "pattern": "\\bJardin Botanico y Cultural de Caguas William Miranda Marin\\b",
+    "replacement": "Jardín Botánico y Cultural de Caguas William Miranda Marín",
+    "locale": "es-PR"
+  },
+  {
+    "pattern": "\\bJardin Botanico\\b",
+    "replacement": "Jardín Botánico",
+    "locale": "es-PR"
+  },
+  {
+    "pattern": "\\bSan Ramon Nonato\\b",
+    "replacement": "San Ramón Nonato",
+    "locale": "es-PR",
+    "ipa": "san raˈmon noˈnato"
+  },
+  {
+    "pattern": "\\bBosque Estatal de Carite\\b",
+    "replacement": "Bosque Estatal de Carité",
+    "locale": "es-PR"
+  },
+  {
+    "pattern": "\\bCordillera Central\\b",
+    "replacement": "Cordillera Central",
+    "locale": "es-PR"
+  },
+  {
+    "pattern": "\\bAvenida Juan Ponce de Leon\\b",
+    "replacement": "Avenida Juan Ponce de León",
+    "locale": "es-PR"
+  },
+  {
+    "pattern": "\\bPonce de Leon\\b",
+    "replacement": "Ponce de León",
+    "locale": "es-PR",
+    "ipa": "ˈponse ðe leˈon"
+  },
+  {
+    "pattern": "\\bMiranda Marin\\b",
+    "replacement": "Miranda Marín",
+    "locale": "es-PR"
+  },
+  {
+    "pattern": "\\bDesvío Municipal de Ciales\\b",
+    "replacement": "Desvío Municipal de Ciales",
+    "locale": "es-PR"
+  },
+  {
+    "pattern": "\\bRuinas de Caparra\\b",
+    "replacement": "Ruinas de Caparra",
+    "locale": "es-PR"
+  },
+  {
+    "pattern": "\\bLa Piedra Escrita\\b",
+    "replacement": "La Piedra Escrita",
+    "locale": "es-PR"
+  },
+  {
+    "pattern": "\\bBalneario de Salinas\\b",
+    "replacement": "Balneario de Salinas",
+    "locale": "es-PR"
+  },
+  {
+    "pattern": "\\bBalneario Puerto Nuevo\\b",
+    "replacement": "Balneario Puerto Nuevo",
+    "locale": "es-PR"
+  },
+  {
+    "pattern": "\\bLaguna Tortuguero\\b",
+    "replacement": "Laguna Tortuguero",
+    "locale": "es-PR"
+  },
+  {
+    "pattern": "\\bPlaya Cortada\\b",
+    "replacement": "Playa Cortada",
+    "locale": "es-PR"
+  },
+  {
+    "pattern": "\\bCerro de Punta\\b",
+    "replacement": "Cerro de Punta",
+    "locale": "es-PR"
+  },
+  {
+    "pattern": "\\bLuis Llorens Torres\\b",
+    "replacement": "Luis Lloréns Torres",
+    "locale": "es-PR"
+  },
+  {
+    "pattern": "\\bTainos\\b",
+    "replacement": "Taínos",
+    "locale": "es-PR",
+    "ipa": "taˈinos"
+  },
+  {
+    "pattern": "\\bTaino\\b",
+    "replacement": "Taíno",
+    "locale": "es-PR",
+    "ipa": "taˈino"
+  },
+  {
+    "pattern": "\\bBoriquen\\b",
+    "replacement": "Borikén",
+    "locale": "es-PR",
+    "ipa": "boriˈken"
+  },
+  {
+    "pattern": "\\bBoriken\\b",
+    "replacement": "Borikén",
+    "locale": "es-PR",
+    "ipa": "boriˈken"
+  },
+  {
+    "pattern": "\\bBoricua\\b",
+    "replacement": "Boricua",
+    "locale": "es-PR"
+  },
+  {
+    "pattern": "\\bcoquis\\b",
+    "replacement": "coquís",
+    "locale": "es-PR",
+    "ipa": "koˈkis"
+  },
+  {
+    "pattern": "\\bcoqui\\b",
+    "replacement": "coquí",
+    "locale": "es-PR",
+    "ipa": "koˈki"
+  },
+  {
+    "pattern": "\\bCarite\\b",
+    "replacement": "Carité",
+    "locale": "es-PR",
+    "ipa": "kariˈte"
+  },
+  {
+    "pattern": "\\bCaguas\\b",
+    "replacement": "Caguas",
+    "locale": "es-PR",
+    "ipa": "ˈkaɣwas"
+  },
+  {
+    "pattern": "\\bCayey\\b",
+    "replacement": "Cayey",
+    "locale": "es-PR",
+    "ipa": "kaˈʝej"
+  },
+  {
+    "pattern": "\\bGuavate\\b",
+    "replacement": "Guavate",
+    "locale": "es-PR",
+    "ipa": "gwaˈβate"
+  },
+  {
+    "pattern": "\\bCoamo\\b",
+    "replacement": "Coamo",
+    "locale": "es-PR",
+    "ipa": "koˈamo"
+  },
+  {
+    "pattern": "\\bJayuya\\b",
+    "replacement": "Jayuya",
+    "locale": "es-PR",
+    "ipa": "xaˈʝuʝa"
+  },
+  {
+    "pattern": "\\bCoabey\\b",
+    "replacement": "Coabey",
+    "locale": "es-PR"
+  },
+  {
+    "pattern": "\\bCiales\\b",
+    "replacement": "Ciales",
+    "locale": "es-PR"
+  },
+  {
+    "pattern": "\\bTortuguero\\b",
+    "replacement": "Tortuguero",
+    "locale": "es-PR"
+  },
+  {
+    "pattern": "\\bCaparra\\b",
+    "replacement": "Caparra",
+    "locale": "es-PR",
+    "ipa": "kaˈpara"
+  },
+  {
+    "pattern": "\\bGuaynabo\\b",
+    "replacement": "Guaynabo",
+    "locale": "es-PR",
+    "ipa": "gwajˈnaβo"
+  },
+  {
+    "pattern": "\\bCollores\\b",
+    "replacement": "Collores",
+    "locale": "es-PR",
+    "ipa": "koˈʝores"
+  },
+  {
+    "pattern": "\\bPatillas\\b",
+    "replacement": "Patillas",
+    "locale": "es-PR",
+    "ipa": "paˈtiʝas"
+  },
+  {
+    "pattern": "\\bJacaguas\\b",
+    "replacement": "Jacaguas",
+    "locale": "es-PR",
+    "ipa": "xakaˈɣwas"
+  },
+  {
+    "pattern": "\\bJuana Diaz\\b",
+    "replacement": "Juana Díaz",
+    "locale": "es-PR",
+    "ipa": "ˈxwana ˈði.as"
+  },
+  {
+    "pattern": "\\bAibonito\\b",
+    "replacement": "Aibonito",
+    "locale": "es-PR"
+  },
+  {
+    "pattern": "\\bCidra\\b",
+    "replacement": "Cidra",
+    "locale": "es-PR"
+  },
+  {
+    "pattern": "\\bAdjuntas\\b",
+    "replacement": "Adjuntas",
+    "locale": "es-PR"
+  },
+  {
+    "pattern": "\\bSanta Isabel\\b",
+    "replacement": "Santa Isabel",
+    "locale": "es-PR"
+  },
+  {
+    "pattern": "\\bSalinas\\b",
+    "replacement": "Salinas",
+    "locale": "es-PR"
+  },
+  {
+    "pattern": "\\bVega Baja\\b",
+    "replacement": "Vega Baja",
+    "locale": "es-PR"
+  },
+  {
+    "pattern": "\\bManati\\b",
+    "replacement": "Manatí",
+    "locale": "es-PR",
+    "ipa": "manaˈti"
+  },
+  {
+    "pattern": "\\bDorado\\b",
+    "replacement": "Dorado",
+    "locale": "es-PR"
+  },
+  {
+    "pattern": "\\bToa Baja\\b",
+    "replacement": "Toa Baja",
+    "locale": "es-PR"
+  },
+  {
+    "pattern": "\\bSanturce\\b",
+    "replacement": "Santurce",
+    "locale": "es-PR",
+    "ipa": "sanˈturse"
+  },
+  {
+    "pattern": "\\bhuracan\\b",
+    "replacement": "huracán",
+    "locale": "es-PR",
+    "ipa": "uraˈkan"
+  },
+  {
+    "pattern": "\\blechoneras\\b",
+    "replacement": "lechoneras",
+    "locale": "es-PR"
+  }
+]
