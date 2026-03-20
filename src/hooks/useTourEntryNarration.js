@@ -42,7 +42,7 @@ export default function useTourEntryNarration(position) {
   }, [nearestRoutePoint, poiProgress, state]);
 
   useEffect(() => {
-    if (state.screen !== 'active' || state.testMode || !position || geometry.length === 0) {
+    if (state.screen !== 'active' || !position || geometry.length === 0) {
       previousOnRouteRef.current = null;
       return;
     }
@@ -57,12 +57,11 @@ export default function useTourEntryNarration(position) {
     }
 
     previousOnRouteRef.current = onRoute;
-  }, [dispatch, geometry.length, onRoute, position, state.hasRouteIntroPlayed, state.screen, state.testMode]);
+  }, [dispatch, geometry.length, onRoute, position, state.hasRouteIntroPlayed, state.screen]);
 
   useEffect(() => {
     if (
       state.screen !== 'active'
-      || state.testMode
       || state.isPaused
       || !position
       || !onRoute
@@ -102,5 +101,5 @@ export default function useTourEntryNarration(position) {
         dispatch({ type: 'SET_SYSTEM_NARRATION_PLAYING', payload: false });
       },
     });
-  }, [dispatch, isSpeaking, isSupported, onRoute, position, speak, state.activePOI, state.hasRouteIntroPlayed, state.isPaused, state.needsWelcomeBackNarration, state.screen, state.systemNarrationPlaying, state.testMode, state.volumeOn, upcomingPOI]);
+  }, [dispatch, isSpeaking, isSupported, onRoute, position, speak, state.activePOI, state.hasRouteIntroPlayed, state.isPaused, state.needsWelcomeBackNarration, state.screen, state.systemNarrationPlaying, state.volumeOn, upcomingPOI]);
 }

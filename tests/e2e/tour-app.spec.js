@@ -83,6 +83,20 @@ test.describe('Active tour interactions', () => {
     expect(playedAudio.some((value) => value.includes('/audio/en/pois/'))).toBeTruthy();
   });
 
+  test('launching the harness plays the same generated intro narration as live mode', async ({ page }) => {
+    await page.goto('/');
+
+    await page.getByTestId('launch-harness-button').click();
+    await expect(page.getByTestId('navigation-screen')).toBeVisible();
+
+    await expect.poll(async () => {
+      return page.evaluate(() => window.__playedAudio.some((value) => value.includes('/audio/en/system/intro-')));
+    }).toBe(true);
+
+    const speechCalls = await page.evaluate(() => window.__speechSynthesisSpeakCalls);
+    expect(speechCalls).toBe(0);
+  });
+
   test('map pan reveals recenter control', async ({ page }) => {
     await page.goto('/');
     await page.getByTestId('launch-harness-button').click();
