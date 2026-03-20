@@ -1,6 +1,5 @@
 import { useCallback, useRef, useEffect } from 'react';
 import { useTour } from '../context/TourContext';
-import { normalizePronunciationText } from '../utils/pronunciation';
 
 const SILENT_AUDIO_DATA_URI = 'data:audio/wav;base64,UklGRl4AAABXQVZFZm10IBAAAAABAAEARKwAAIhYAQACABAAZGF0YToAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA=';
 export const EXTERNAL_NAVIGATION_AUDIO_LEAD_IN_MS = 5000;
@@ -40,12 +39,10 @@ function resolveMediaUrl(src) {
  */
 export default function useTTS() {
   const { state } = useTour();
-  const utteranceRef = useRef(null);
   const audioRef = useRef(sharedNarrationAudio);
   const ambienceRef = useRef(sharedAmbienceAudio);
   const pendingPlaybackTimerRef = useRef(null);
-  const isSpeechSupportedRef = useRef(typeof window !== 'undefined' && 'speechSynthesis' in window);
-  const isSupportedRef = useRef(Boolean(audioRef.current) || isSpeechSupportedRef.current);
+  const isSupportedRef = useRef(Boolean(audioRef.current));
 
   const stopAmbience = useCallback(() => {
     if (ambienceRef.current) {
@@ -123,10 +120,6 @@ export default function useTTS() {
       audioRef.current.onerror = null;
     }
 
-    if (isSpeechSupportedRef.current) {
-      window.speechSynthesis.cancel();
-    }
-
     stopAmbience();
   }, [clearPendingPlayback, stopAmbience]);
 
@@ -137,130 +130,55 @@ export default function useTTS() {
     };
   }, [stop]);
 
-  const speakWithSpeechSynthesis = useCallback((text, {
-    rate = 0.95,
-    lang = 'en-US',
-    onEnd,
-    ambienceSrc,
-    ambienceVolume = 0.16,
-    leadInMs = 0,
-  } = {}) => {
-    if (!isSpeechSupportedRef.current || !text) return false;
-
-    const normalizedText = normalizePronunciationText(text);
-
-    window.speechSynthesis.cancel();
-
-    const utterance = new SpeechSynthesisUtterance(normalizedText);
-    utterance.rate = rate;
-    utterance.lang = lang;
-    utterance.pitch = 1;
-
-    const voices = window.speechSynthesis.getVoices();
-    const preferredVoice = voices.find((voice) => {
-      return (
-        voice.lang.startsWith(lang.slice(0, 2))
-        && /(ava|jenny|aria|samantha|zira|female)/i.test(voice.name)
-      );
-    }) || voices.find(
-      (voice) => voice.lang.startsWith(lang.slice(0, 2)) && voice.localService
-    );
-    if (preferredVoice) {
-      utterance.voice = preferredVoice;
-    }
-
-    utterance.onend = () => {
-      stopAmbience();
-      onEnd?.();
-    };
-    utterance.onerror = () => {
-      stopAmbience();
-    };
-
-    utteranceRef.current = utterance;
-
-    const startSpeech = () => {
-      if (ambienceSrc) {
-        startAmbience(ambienceSrc, ambienceVolume);
-      }
-      window.speechSynthesis.speak(utterance);
-    };
-
-    if (leadInMs > 0) {
-      pendingPlaybackTimerRef.current = window.setTimeout(() => {
-        pendingPlaybackTimerRef.current = null;
-        startSpeech();
-      }, leadInMs);
-    } else {
-      startSpeech();
-    }
-
-    return true;
-  }, [startAmbience, stopAmbience]);
-
   const speak = useCallback((text, {
     audioSrc,
-    rate = 0.92,
-    lang = 'en-US',
     onEnd,
     ambienceSrc,
     ambienceVolume = 0.16,
     leadInMs,
   } = {}) => {
-    if (!isSupportedRef.current || !text) return;
+    if (!isSupportedRef.current || !text || !audioSrc) return;
 
     const resolvedLeadInMs = leadInMs ?? (state.externalNavigationMode ? EXTERNAL_NAVIGATION_AUDIO_LEAD_IN_MS : 0);
 
     stop();
 
-    if (audioSrc && audioRef.current) {
-      const startAudioPlayback = () => {
-        if (ambienceSrc) {
-          startAmbience(ambienceSrc, ambienceVolume);
-        }
-        audioRef.current.src = resolveMediaUrl(audioSrc);
-        audioRef.current.preload = 'auto';
-        audioRef.current.playsInline = true;
-        audioRef.current.playbackRate = 1;
-        audioRef.current.onended = () => {
-          stopAmbience();
-          onEnd?.();
-        };
-        audioRef.current.onerror = () => {
-          stopAmbience();
-          speakWithSpeechSynthesis(text, { rate, lang, onEnd, ambienceSrc, ambienceVolume, leadInMs: 0 });
-        };
+    const handlePlaybackComplete = () => {
+      stopAmbience();
+      onEnd?.();
+    };
 
-        audioRef.current.play().catch((error) => {
-          stopAmbience();
-
-          if (error?.name === 'NotAllowedError') {
-            return;
-          }
-
-          speakWithSpeechSynthesis(text, { rate, lang, onEnd, ambienceSrc, ambienceVolume, leadInMs: 0 });
-        });
-      };
-
-      if (resolvedLeadInMs > 0) {
-        pendingPlaybackTimerRef.current = window.setTimeout(() => {
-          pendingPlaybackTimerRef.current = null;
-          startAudioPlayback();
-        }, resolvedLeadInMs);
-      } else {
-        startAudioPlayback();
+    const startAudioPlayback = () => {
+      if (ambienceSrc) {
+        startAmbience(ambienceSrc, ambienceVolume);
       }
-      return;
-    }
+      audioRef.current.src = resolveMediaUrl(audioSrc);
+      audioRef.current.preload = 'auto';
+      audioRef.current.playsInline = true;
+      audioRef.current.playbackRate = 1;
+      audioRef.current.onended = handlePlaybackComplete;
+      audioRef.current.onerror = handlePlaybackComplete;
 
-    speakWithSpeechSynthesis(text, { rate, lang, onEnd, ambienceSrc, ambienceVolume, leadInMs: resolvedLeadInMs });
-  }, [speakWithSpeechSynthesis, startAmbience, state.externalNavigationMode, stop, stopAmbience]);
+      audioRef.current.play().catch(() => {
+        handlePlaybackComplete();
+      });
+    };
+
+    if (resolvedLeadInMs > 0) {
+      pendingPlaybackTimerRef.current = window.setTimeout(() => {
+        pendingPlaybackTimerRef.current = null;
+        startAudioPlayback();
+      }, resolvedLeadInMs);
+    } else {
+      startAudioPlayback();
+    }
+  }, [startAmbience, state.externalNavigationMode, stop, stopAmbience]);
 
   const isSpeaking = useCallback(() => {
     if (!isSupportedRef.current) return false;
 
     const audioPlaying = Boolean(audioRef.current && !audioRef.current.paused && !audioRef.current.ended);
-    return Boolean(pendingPlaybackTimerRef.current) || audioPlaying || (isSpeechSupportedRef.current && window.speechSynthesis.speaking);
+    return Boolean(pendingPlaybackTimerRef.current) || audioPlaying;
   }, []);
 
   return { speak, stop, isSpeaking, isSupported: isSupportedRef.current, primePlayback };

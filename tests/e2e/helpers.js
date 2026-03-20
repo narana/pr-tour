@@ -6,6 +6,7 @@ export async function installMediaAndWindowSpies(page) {
     window.__playedAudio = [];
     window.__playedAudioEvents = [];
     window.__speechSynthesisSpeakCalls = 0;
+    window.__speechSynthesisUtterances = [];
     window.__openedUrls = [];
     window.__copiedText = '';
     window.__confirmMessages = [];
@@ -52,17 +53,48 @@ export async function installMediaAndWindowSpies(page) {
 
     if ('speechSynthesis' in window) {
       window.speechSynthesis.cancel = () => {};
-      window.speechSynthesis.speak = () => {
+      window.speechSynthesis.speak = (utterance) => {
         window.__speechSynthesisSpeakCalls += 1;
+        window.__speechSynthesisUtterances.push(utterance?.text || '');
+        if (typeof utterance?.onend === 'function') {
+          queueMicrotask(() => utterance.onend(new Event('end')));
+        }
       };
       window.speechSynthesis.getVoices = () => [];
     }
 
+    const mediaPlaybackState = new WeakMap();
+
+    const setMediaState = (element, nextState) => {
+      const currentState = mediaPlaybackState.get(element) || { paused: true, ended: true };
+      mediaPlaybackState.set(element, { ...currentState, ...nextState });
+    };
+
+    Object.defineProperty(HTMLMediaElement.prototype, 'paused', {
+      configurable: true,
+      get() {
+        return (mediaPlaybackState.get(this) || { paused: true }).paused;
+      },
+    });
+
+    Object.defineProperty(HTMLMediaElement.prototype, 'ended', {
+      configurable: true,
+      get() {
+        return (mediaPlaybackState.get(this) || { ended: true }).ended;
+      },
+    });
+
+    HTMLMediaElement.prototype.pause = function pause() {
+      setMediaState(this, { paused: true, ended: true });
+    };
+
     HTMLMediaElement.prototype.play = function play() {
-      const src = this.currentSrc || this.src;
+      const src = this.src || this.currentSrc;
+      setMediaState(this, { paused: false, ended: false });
       window.__playedAudio.push(src);
       window.__playedAudioEvents.push({ src, time: Date.now() });
       queueMicrotask(() => {
+        setMediaState(this, { paused: true, ended: true });
         if (typeof this.onended === 'function') {
           this.onended(new Event('ended'));
         }

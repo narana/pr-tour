@@ -9,6 +9,9 @@ const initialState = {
   isPaused: false,
   visitedPOIs: [],            // IDs of POIs marked as visited
   triggeredPOIs: [],          // IDs of POIs whose alert has been triggered this session
+  hasRouteIntroPlayed: false,
+  needsWelcomeBackNarration: false,
+  systemNarrationPlaying: false,
   activePOI: null,            // Currently displayed POI object (for alert overlay)
   currentSegment: 1,
   currentStepIndex: 0,
@@ -25,7 +28,13 @@ const initialState = {
 function tourReducer(state, action) {
   switch (action.type) {
     case 'RESTORE_STATE':
-      return { ...state, ...action.payload, activePOI: null, narrationPlaying: false };
+      return {
+        ...state,
+        ...action.payload,
+        activePOI: null,
+        narrationPlaying: false,
+        systemNarrationPlaying: false,
+      };
 
     case 'START_TOUR':
       return {
@@ -35,6 +44,9 @@ function tourReducer(state, action) {
         isPaused: false,
         visitedPOIs: action.payload?.visitedPOIs || [],
         triggeredPOIs: action.payload?.triggeredPOIs || [],
+        hasRouteIntroPlayed: false,
+        needsWelcomeBackNarration: false,
+        systemNarrationPlaying: false,
         elapsedSeconds: 0,
         currentSegment: action.payload?.currentSegment || 1,
         currentStepIndex: action.payload?.currentStepIndex || 0,
@@ -91,10 +103,28 @@ function tourReducer(state, action) {
       };
 
     case 'PAUSE_TOUR':
-      return { ...state, isPaused: true, pauseStartTime: Date.now() };
+      return {
+        ...state,
+        isPaused: true,
+        pauseStartTime: Date.now(),
+        needsWelcomeBackNarration: state.hasRouteIntroPlayed ? true : state.needsWelcomeBackNarration,
+      };
 
     case 'RESUME_TOUR':
       return { ...state, isPaused: false, pauseStartTime: null };
+
+    case 'MARK_ROUTE_INTRO_PLAYED':
+      return {
+        ...state,
+        hasRouteIntroPlayed: true,
+        needsWelcomeBackNarration: false,
+      };
+
+    case 'SET_WELCOME_BACK_PENDING':
+      return { ...state, needsWelcomeBackNarration: Boolean(action.payload) };
+
+    case 'SET_SYSTEM_NARRATION_PLAYING':
+      return { ...state, systemNarrationPlaying: Boolean(action.payload) };
 
     case 'SET_NARRATION_PLAYING':
       return { ...state, narrationPlaying: action.payload };
@@ -115,7 +145,14 @@ function tourReducer(state, action) {
       return { ...state, currentStepIndex: action.payload };
 
     case 'COMPLETE_TOUR':
-      return { ...state, screen: 'complete', isPaused: false, activePOI: null };
+      return {
+        ...state,
+        screen: 'complete',
+        isPaused: false,
+        activePOI: null,
+        needsWelcomeBackNarration: false,
+        systemNarrationPlaying: false,
+      };
 
     case 'RESTART_TOUR':
       clearTourState();
@@ -149,6 +186,8 @@ export function TourProvider({ children }) {
     state.isPaused,
     state.currentSegment,
     state.currentStepIndex,
+    state.hasRouteIntroPlayed,
+    state.needsWelcomeBackNarration,
     state.externalNavigationMode,
     state.testMode,
     state.screen,

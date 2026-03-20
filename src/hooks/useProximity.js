@@ -19,7 +19,14 @@ export default function useProximity(position) {
   const poiProgress = useMemo(() => getPOIProgress(pois, geometry), [geometry, pois]);
 
   useEffect(() => {
-    if (!position || state.isPaused || state.screen !== 'active') return;
+    if (
+      !position
+      || state.isPaused
+      || state.screen !== 'active'
+      || state.systemNarrationPlaying
+      || !state.hasRouteIntroPlayed
+      || state.needsWelcomeBackNarration
+    ) return;
 
     const now = Date.now();
     const COOLDOWN_MS = 10 * 60 * 1000; // 10 minutes between re-triggers (PRD POI-07)
@@ -50,5 +57,5 @@ export default function useProximity(position) {
         break; // Only trigger one POI at a time
       }
     }
-  }, [dispatch, geometry, poiProgress, pois, position, state.isPaused, state.screen, state.triggeredPOIs, state.visitedPOIs]);
+  }, [dispatch, geometry, poiProgress, pois, position, state.hasRouteIntroPlayed, state.isPaused, state.needsWelcomeBackNarration, state.screen, state.systemNarrationPlaying, state.triggeredPOIs, state.visitedPOIs]);
 }

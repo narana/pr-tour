@@ -2,6 +2,7 @@ import fs from 'node:fs/promises';
 import path from 'node:path';
 import { spawnSync } from 'node:child_process';
 import pois from '../src/data/pois.js';
+import { buildSystemNarrationVariants } from '../src/data/systemNarration.js';
 import routeData from '../src/data/routeData.json' with { type: 'json' };
 import { buildAudioSourceFingerprint, buildExpectedAudioFiles } from './asset-fingerprints.mjs';
 
@@ -36,6 +37,7 @@ async function ensureDirectories() {
   await fs.mkdir(path.join(outputRoot, 'pois'), { recursive: true });
   await fs.mkdir(path.join(outputRoot, 'directions'), { recursive: true });
   await fs.mkdir(path.join(outputRoot, 'previews'), { recursive: true });
+  await fs.mkdir(path.join(outputRoot, 'system'), { recursive: true });
   await fs.mkdir(path.join(outputRoot, 'ambience'), { recursive: true });
 }
 
@@ -160,6 +162,7 @@ async function main() {
   ensureEdgeTTSInstalled();
 
   const previewCount = pois.filter((poi) => poi.preview?.en).length;
+  const systemNarrations = buildSystemNarrationVariants(pois);
   const expectedFiles = buildExpectedAudioFiles({
     pois,
     routeSteps: routeData.steps,
@@ -177,6 +180,7 @@ async function main() {
       poiNarrations: pois.length,
       previewClips: previewCount,
       directionClips: routeData.steps.length,
+      systemClips: systemNarrations.length,
     },
   };
   const existingManifest = await readExistingManifest();
@@ -232,9 +236,23 @@ async function main() {
     await synthesizeMp3(step.instruction, destination, VOICES.direction);
   }
 
+  for (const clip of systemNarrations) {
+    const destination = path.resolve(`public${clip.audioSrc}`.replaceAll('/', path.sep));
+    if (!regenerateAll) {
+      try {
+        await fs.access(destination);
+        continue;
+      } catch {
+        // File does not exist yet.
+      }
+    }
+
+    await synthesizeMp3(clip.text, destination, VOICES.narration);
+  }
+
   nextManifest.generatedAt = new Date().toISOString();
   await fs.writeFile(audioManifestPath, `${JSON.stringify(nextManifest, null, 2)}\n`, 'utf8');
-  process.stdout.write(`Generated ${pois.length} POI narrations, ${previewCount} preview clips, and ${routeData.steps.length} direction clips.\n`);
+  process.stdout.write(`Generated ${pois.length} POI narrations, ${previewCount} preview clips, ${routeData.steps.length} direction clips, and ${systemNarrations.length} system clips.\n`);
 }
 
 main().catch((error) => {

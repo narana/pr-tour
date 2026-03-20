@@ -10,6 +10,8 @@ export function saveTourState(state) {
       isPaused: state.isPaused,
       visitedPOIs: state.visitedPOIs,
       triggeredPOIs: state.triggeredPOIs,
+      hasRouteIntroPlayed: state.hasRouteIntroPlayed,
+      needsWelcomeBackNarration: state.needsWelcomeBackNarration,
       currentSegment: state.currentSegment,
       currentStepIndex: state.currentStepIndex,
       elapsedSeconds: state.elapsedSeconds,

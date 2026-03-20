@@ -59,6 +59,9 @@ export default function useUpcomingWaypointPreview(position) {
       || state.screen !== 'active'
       || state.isPaused
       || state.activePOI
+      || state.systemNarrationPlaying
+      || !state.hasRouteIntroPlayed
+      || state.needsWelcomeBackNarration
       || !state.volumeOn
       || !isSupported
       || geometry.length === 0
@@ -103,5 +106,5 @@ export default function useUpcomingWaypointPreview(position) {
       audioSrc: buildPreviewAudioSrc(nextWaypoint.id),
       ambienceSrc: nextWaypoint.soundscape?.en,
     });
-  }, [benchmarkSpeedMetersPerSecond, cumulativeRouteDistances, geometry, isSupported, poiProgress, position, speak, state.activePOI, state.externalNavigationMode, state.isPaused, state.screen, state.triggeredPOIs, state.visitedPOIs, state.volumeOn]);
+  }, [benchmarkSpeedMetersPerSecond, cumulativeRouteDistances, geometry, isSupported, poiProgress, position, speak, state.activePOI, state.externalNavigationMode, state.hasRouteIntroPlayed, state.isPaused, state.needsWelcomeBackNarration, state.screen, state.systemNarrationPlaying, state.triggeredPOIs, state.visitedPOIs, state.volumeOn]);
 }

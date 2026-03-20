@@ -1,5 +1,6 @@
 import { createHash } from 'node:crypto';
 import pronunciationHints from '../src/data/pronunciationHints.json' with { type: 'json' };
+import { buildSystemNarrationVariants } from '../src/data/systemNarration.js';
 
 function sha256(value) {
   return createHash('sha256').update(value).digest('hex');
@@ -14,6 +15,8 @@ export function buildRouteSourceFingerprint({ pois, routeWaypoints, routeWaypoin
 }
 
 export function buildAudioSourceFingerprint({ pois, routeSteps, voiceProfiles }) {
+  const systemNarrations = buildSystemNarrationVariants(pois);
+
   return sha256(JSON.stringify({
     pois: pois.map((poi) => ({
       id: poi.id,
@@ -27,14 +30,16 @@ export function buildAudioSourceFingerprint({ pois, routeSteps, voiceProfiles })
       instruction: step.instruction,
       audioSrc: step.audioSrc,
     })),
+    systemNarrations,
     pronunciationHints,
     voiceProfiles,
-    generatorVersion: 4,
+    generatorVersion: 5,
   }));
 }
 
 export function buildExpectedAudioFiles({ pois, routeSteps }) {
   const files = new Set();
+  const systemNarrations = buildSystemNarrationVariants(pois);
 
   for (const poi of pois) {
     if (poi.audio?.en) {
@@ -52,6 +57,10 @@ export function buildExpectedAudioFiles({ pois, routeSteps }) {
     if (step.audioSrc) {
       files.add(`public${step.audioSrc}`);
     }
+  }
+
+  for (const clip of systemNarrations) {
+    files.add(`public${clip.audioSrc}`);
   }
 
   files.add('public/audio/en/manifest.json');

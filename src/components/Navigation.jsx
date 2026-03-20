@@ -5,6 +5,7 @@ import useProximity from '../hooks/useProximity';
 import useTurnByTurn from '../hooks/useTurnByTurn';
 import useRouteSimulation from '../hooks/useRouteSimulation';
 import useUpcomingWaypointPreview from '../hooks/useUpcomingWaypointPreview';
+import useTourEntryNarration from '../hooks/useTourEntryNarration';
 import useTTS from '../hooks/useTTS';
 import TourMap from './TourMap';
 import POIAlert from './POIAlert';
@@ -43,6 +44,7 @@ export default function Navigation() {
     initialStepIndex: state.currentStepIndex,
   });
   const effectivePosition = state.testMode ? (simulation.position || position) : position;
+  const systemNarrationPending = !state.hasRouteIntroPlayed || state.needsWelcomeBackNarration;
 
   // Push GPS position into tour state
   useEffect(() => {
@@ -53,6 +55,7 @@ export default function Navigation() {
 
   // Proximity detection — monitors position against POI geofences
   useProximity(effectivePosition);
+  useTourEntryNarration(effectivePosition);
   useUpcomingWaypointPreview(effectivePosition);
 
   const { nextStep, formatStepDistance, summary } = useTurnByTurn({
@@ -60,6 +63,8 @@ export default function Navigation() {
     volumeOn: state.volumeOn,
     isPaused: state.isPaused,
     currentStepIndex: state.currentStepIndex,
+    systemNarrationPending,
+    systemNarrationPlaying: state.systemNarrationPlaying,
     voiceGuidanceEnabled: !state.externalNavigationMode && !state.testMode,
     onStepChange: (stepIndex) => dispatch({ type: 'UPDATE_CURRENT_STEP', payload: stepIndex }),
   });

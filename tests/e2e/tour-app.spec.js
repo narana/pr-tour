@@ -110,18 +110,84 @@ test.describe('Active tour interactions', () => {
     expect(savedState.currentStepIndex).toBeGreaterThan(0);
   });
 
+  test('first route lock plays one welcome narration with an overall tour preview', async ({ page, context }) => {
+    await context.setGeolocation({ latitude: 18.2395442, longitude: -66.0622302 });
+    await page.goto('/');
+
+    await page.getByTestId('enable-gps-button').click();
+    await page.getByTestId('start-from-current-button').click({ force: true });
+    await expect(page.getByTestId('navigation-screen')).toBeVisible({ timeout: 10000 });
+
+    await expect.poll(async () => {
+      return page.evaluate(() => window.__playedAudio.some((value) => value.includes('/audio/en/system/intro-caguas-botanical-garden.mp3')));
+    }).toBe(true);
+
+    const speechCalls = await page.evaluate(() => window.__speechSynthesisSpeakCalls);
+    expect(speechCalls).toBe(0);
+  });
+
+  test('resume and off-route recovery each trigger a welcome-back narration with the next POI', async ({ page, context }) => {
+    await context.setGeolocation({ latitude: 18.2395442, longitude: -66.0622302 });
+    await page.goto('/');
+
+    await page.getByTestId('enable-gps-button').click();
+    await page.getByTestId('start-from-current-button').click({ force: true });
+    await expect(page.getByTestId('navigation-screen')).toBeVisible({ timeout: 10000 });
+    await expect.poll(async () => {
+      return page.evaluate(() => window.__playedAudio.filter((value) => value.includes('/audio/en/system/')).length);
+    }).toBeGreaterThan(0);
+
+    await page.evaluate(() => {
+      window.__playedAudio = [];
+      window.__speechSynthesisSpeakCalls = 0;
+    });
+
+    if (await page.getByTestId('poi-alert').count()) {
+      await page.evaluate(() => {
+        document.querySelector('[data-testid="poi-alert"] button.poi-alert__btn--secondary:last-of-type')?.click();
+      });
+      await expect(page.getByTestId('poi-alert')).toHaveCount(0);
+    }
+
+    await page.getByTestId('pause-tour-button').click();
+    await expect(page.getByTestId('pause-screen')).toBeVisible();
+    await page.getByTestId('pause-screen-resume-button').click();
+
+    await expect.poll(async () => {
+      return page.evaluate(() => window.__playedAudio.some((value) => value.includes('/audio/en/system/welcome-back-') && !value.includes('welcome-back-generic.mp3')));
+    }).toBe(true);
+
+    await page.evaluate(() => {
+      window.__playedAudio = [];
+      window.__speechSynthesisSpeakCalls = 0;
+    });
+
+    await context.setGeolocation({ latitude: 18.2011, longitude: -67.1396 });
+    await page.waitForTimeout(500);
+    await context.setGeolocation({ latitude: 18.2395442, longitude: -66.0622302 });
+
+    await expect.poll(async () => {
+      return page.evaluate(() => window.__playedAudio.filter((value) => value.includes('/audio/en/system/')).length);
+    }).toBeGreaterThan(0);
+
+    const playedSystemAudio = await page.evaluate(() => window.__playedAudio.filter((value) => value.includes('/audio/en/system/')));
+    expect(playedSystemAudio.at(-1)).toContain('/audio/en/system/welcome-back-');
+
+    const speechCalls = await page.evaluate(() => window.__speechSynthesisSpeakCalls);
+    expect(speechCalls).toBe(0);
+  });
+
   test('pause, resume, volume toggle, and replay drawer all respond', async ({ page }) => {
     await page.goto('/');
     await page.getByTestId('launch-harness-button').click();
     await page.getByTestId('harness-collapse-toggle').click();
+    await page.getByTestId('harness-preview-poi').click({ force: true });
+    await expect(page.getByTestId('poi-alert')).toBeVisible();
     await page.evaluate(() => {
-      window.__tourTestApi.dispatch({ type: 'ADD_TRIGGERED_POI', payload: 'caguas-botanical-garden' });
-      window.__tourTestApi.dispatch({ type: 'VISIT_POI', payload: 'caguas-botanical-garden' });
+      document.querySelector('[data-testid="poi-alert"] button.poi-alert__btn--secondary:last-of-type')?.click();
     });
+    await expect(page.getByTestId('poi-alert')).toHaveCount(0);
 
-    await expect.poll(async () => page.evaluate(() => {
-      return window.__tourTestApi.getState().triggeredPOIs.length;
-    })).toBeGreaterThan(0);
     await expect.poll(async () => page.evaluate(() => {
       return Boolean(
         document.querySelector('[data-testid="harness-open-replay"]') ||
