@@ -15,7 +15,7 @@ function getUpcomingPOI(poiProgress, routeIndex, state) {
 
 export default function useTourEntryNarration(position) {
   const { state, dispatch, pois } = useTour();
-  const { speak, isSupported, isSpeaking } = useTTS();
+  const { speak, cancel, isSupported, isSpeaking } = useTTS();
   const previousOnRouteRef = useRef(null);
   const geometry = routeData.geometry || [];
 
@@ -60,6 +60,19 @@ export default function useTourEntryNarration(position) {
   }, [dispatch, geometry.length, onRoute, position, state.hasRouteIntroPlayed, state.screen]);
 
   useEffect(() => {
+    if (!state.systemNarrationPlaying) {
+      return;
+    }
+
+    if (state.screen === 'active' && !state.isPaused && !state.activePOI) {
+      return;
+    }
+
+    cancel({ kind: 'system' });
+    dispatch({ type: 'SET_SYSTEM_NARRATION_PLAYING', payload: false });
+  }, [cancel, dispatch, state.activePOI, state.isPaused, state.screen, state.systemNarrationPlaying]);
+
+  useEffect(() => {
     if (
       state.screen !== 'active'
       || state.isPaused
@@ -97,6 +110,8 @@ export default function useTourEntryNarration(position) {
 
     speak(narrationText, {
       audioSrc,
+      kind: 'system',
+      key: `${narrationKind}-${upcomingPOI?.id || 'generic'}`,
       onEnd: () => {
         dispatch({ type: 'SET_SYSTEM_NARRATION_PLAYING', payload: false });
       },

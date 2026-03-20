@@ -24,6 +24,18 @@ test.describe('Pre-tour permissions', () => {
     await expect(page.getByTestId('start-from-current-button')).toBeEnabled();
   });
 
+  test('preparing the tour surfaces asset preload progress via toasts', async ({ page, context }) => {
+    await context.grantPermissions(['geolocation']);
+    await context.setGeolocation({ latitude: 18.2395442, longitude: -66.0622302 });
+    await page.goto('/');
+
+    await page.getByTestId('enable-gps-button').click();
+
+    await expect.poll(async () => {
+      return page.evaluate(() => document.querySelector('[data-testid="status-toast"]')?.textContent || '');
+    }).toMatch(/Preloading|Tour assets cached/i);
+  });
+
   test('off-route geolocation offers Google Maps recovery guidance', async ({ page, context }) => {
     await context.grantPermissions(['geolocation']);
     await installMediaAndWindowSpies(page);

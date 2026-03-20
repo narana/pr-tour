@@ -25,7 +25,16 @@ import {
 import { routeWaypointLabels } from '../data/pois';
 import routeData from '../data/routeData.json';
 
-export default function Navigation() {
+const NON_STOP_TOURING_SPEED_KPH = 65;
+const ROUTE_STEPS = routeData.steps || [];
+const DEFAULT_NON_STOP_TOUR_SECONDS = 4 * 3600;
+const RAW_ROUTE_DURATION_SECONDS = routeData.summary?.durationSeconds
+  || ROUTE_STEPS.reduce((totalDuration, step) => totalDuration + (step.durationSeconds || 0), 0);
+const ROUTE_DURATION_CALIBRATION_FACTOR = RAW_ROUTE_DURATION_SECONDS > 0
+  ? DEFAULT_NON_STOP_TOUR_SECONDS / RAW_ROUTE_DURATION_SECONDS
+  : 1;
+
+export default function Navigation({ assetPreload }) {
   const { state, dispatch, totalPOIs, visitedCount, progress, pois } = useTour();
   const { position, error } = useGeolocation(state.screen === 'active');
   const { stop } = useTTS();
@@ -35,6 +44,10 @@ export default function Navigation() {
   const [harnessCollapsed, setHarnessCollapsed] = useState(true);
   const [androidOptimized] = useState(() => isAndroidDevice());
   const [statusToast, setStatusToast] = useState(null);
+  const activeToast = statusToast || assetPreload?.toast || null;
+  const dismissActiveToast = statusToast
+    ? () => setStatusToast(null)
+    : () => assetPreload?.dismissToast?.();
   const poiProgress = useMemo(() => getPOIProgress(pois), [pois]);
   const [selectedTestPOIIndex, setSelectedTestPOIIndex] = useState(0);
 
@@ -182,9 +195,21 @@ export default function Navigation() {
   const nextDestinationLabel = nextPOI?.name || nextStep?.roadName || 'Next waypoint';
   const nextDestinationCoordinates = formatDestinationCoordinates(nextDestination);
 
-  // Estimated remaining time (rough: based on fraction of route remaining)
-  const totalEstimatedSeconds = 3 * 3600; // ~3 hours total drive
-  const remainingSeconds = Math.max(0, Math.round(totalEstimatedSeconds * (1 - progress)) - state.elapsedSeconds);
+  const remainingRouteDurationSeconds = useMemo(() => {
+    if (ROUTE_STEPS.length === 0) {
+      return DEFAULT_NON_STOP_TOUR_SECONDS;
+    }
+
+    const boundedStepIndex = Math.max(0, Math.min(state.currentStepIndex, ROUTE_STEPS.length));
+    return ROUTE_STEPS
+      .slice(boundedStepIndex)
+      .reduce((totalDuration, step) => totalDuration + (step.durationSeconds || 0), 0);
+  }, [state.currentStepIndex]);
+
+  const remainingSeconds = Math.max(
+    0,
+    Math.round(remainingRouteDurationSeconds * ROUTE_DURATION_CALIBRATION_FACTOR),
+  );
 
   const handlePreviewPOI = () => {
     if (!selectedTestPOI) return;
@@ -225,7 +250,7 @@ export default function Navigation() {
 
   return (
     <div className={`navigation${drivingView ? ' navigation--driving' : ''}`} data-testid="navigation-screen">
-      <StatusToast toast={statusToast} onDismiss={() => setStatusToast(null)} />
+      <StatusToast toast={activeToast} onDismiss={dismissActiveToast} />
 
       {/* Top bar — next stop info */}
       <div className="navigation__top-bar">

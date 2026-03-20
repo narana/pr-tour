@@ -11,7 +11,7 @@ import { buildRouteRecoveryLabel, getStartConfigFromPosition, isAndroidDevice, l
 import ResetTourButton from './ResetTourButton';
 import StatusToast from './StatusToast';
 
-export default function PreTour() {
+export default function PreTour({ assetPreload }) {
   const { state, dispatch } = useTour();
   const { error, requestPermission, position, accuracy, permissionState } = useGeolocation(false);
   const { primePlayback } = useTTS();
@@ -19,6 +19,10 @@ export default function PreTour() {
   const [gpsRequesting, setGpsRequesting] = useState(false);
   const [statusToast, setStatusToast] = useState(null);
   const [testMode, setTestMode] = useState(false);
+  const activeToast = statusToast || assetPreload?.toast || null;
+  const dismissActiveToast = statusToast
+    ? () => setStatusToast(null)
+    : () => assetPreload?.dismissToast?.();
 
   const startConfig = useMemo(() => {
     if (!position) return null;
@@ -27,6 +31,7 @@ export default function PreTour() {
 
   const handleRequestGPS = async () => {
     setGpsRequesting(true);
+    void assetPreload?.startPreloading();
     await primePlayback();
     const granted = await requestPermission();
     setGpsReady(granted);
@@ -75,6 +80,7 @@ export default function PreTour() {
   }, [statusToast]);
 
   const handleStart = async () => {
+    void assetPreload?.startPreloading();
     await primePlayback();
     dispatch({ type: 'START_TOUR', payload: { testMode } });
   };
@@ -82,6 +88,7 @@ export default function PreTour() {
   const handleStartFromHere = async () => {
     if (!startConfig?.onRoute) return;
 
+    void assetPreload?.startPreloading();
     await primePlayback();
 
     dispatch({
@@ -96,6 +103,7 @@ export default function PreTour() {
   };
 
   const handleLaunchHarness = async () => {
+    void assetPreload?.startPreloading();
     await primePlayback();
     dispatch({ type: 'START_TOUR', payload: { testMode: true } });
   };
@@ -107,7 +115,7 @@ export default function PreTour() {
 
   return (
     <div className="pre-tour">
-      <StatusToast toast={statusToast} onDismiss={() => setStatusToast(null)} />
+      <StatusToast toast={activeToast} onDismiss={dismissActiveToast} />
 
       <div className="pre-tour__header">
         <HeritageArtCluster className="pre-tour__hero-art" />

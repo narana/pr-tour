@@ -20,11 +20,13 @@ export default function ReplayDrawer({ open, onClose }) {
     const text = poi.narration?.en || '';
     if (!text || !isSupported) return;
 
-    stop();
     setPlayingId(poi.id);
     speak(text, {
       audioSrc: poi.audio?.en,
       ambienceSrc: poi.soundscape?.en,
+      interrupt: true,
+      kind: 'replay',
+      key: poi.id,
       onEnd: () => setPlayingId(null),
     });
   };

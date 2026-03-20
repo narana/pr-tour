@@ -8,7 +8,7 @@ const PASS_DISTANCE_METERS = 35;
 const LOOKAHEAD_STEPS = 5;
 
 export default function useTurnByTurn({ position, volumeOn, isPaused, currentStepIndex, onStepChange, voiceGuidanceEnabled = true, systemNarrationPlaying = false, systemNarrationPending = false }) {
-  const { speak, stop, isSupported } = useTTS();
+  const { speak, cancel, isSupported } = useTTS();
   const announcedRef = useRef(new Set());
 
   const steps = routeData.steps || [];
@@ -50,17 +50,19 @@ export default function useTurnByTurn({ position, volumeOn, isPaused, currentSte
       announcedRef.current.add(currentStep.id);
       speak(currentStep.instruction, {
         audioSrc: currentStep.audioSrc,
+        kind: 'direction',
+        key: currentStep.id,
         onEnd: undefined,
       });
     }
 
     if (currentDistance <= PASS_DISTANCE_METERS) {
       if (voiceGuidanceEnabled && announcedRef.current.has(currentStep.id)) {
-        stop();
+        cancel({ kind: 'direction', key: currentStep.id });
       }
       onStepChange(currentStepIndex + 1);
     }
-  }, [currentStepIndex, isPaused, isSupported, onStepChange, position, speak, steps, stop, systemNarrationPending, systemNarrationPlaying, voiceGuidanceEnabled, volumeOn]);
+  }, [cancel, currentStepIndex, isPaused, isSupported, onStepChange, position, speak, steps, systemNarrationPending, systemNarrationPlaying, voiceGuidanceEnabled, volumeOn]);
 
   return {
     nextStep,

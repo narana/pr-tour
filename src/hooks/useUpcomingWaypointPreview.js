@@ -33,7 +33,7 @@ function buildPreviewAudioSrc(id) {
 
 export default function useUpcomingWaypointPreview(position) {
   const { state, pois } = useTour();
-  const { speak, isSupported } = useTTS();
+  const { speak, cancel, isSupported } = useTTS();
   const announcedPreviewsRef = useRef(new Set());
   const geometry = routeData.geometry || [];
   const benchmarkSpeedMetersPerSecond = useMemo(() => {
@@ -52,6 +52,21 @@ export default function useUpcomingWaypointPreview(position) {
       announcedPreviewsRef.current.clear();
     }
   }, [state.screen]);
+
+  useEffect(() => {
+    if (
+      state.screen !== 'active'
+      || state.activePOI
+      || state.systemNarrationPlaying
+      || state.needsWelcomeBackNarration
+    ) {
+      cancel({ kind: 'preview' });
+    }
+  }, [cancel, state.activePOI, state.needsWelcomeBackNarration, state.screen, state.systemNarrationPlaying]);
+
+  useEffect(() => {
+    cancel({ kind: 'preview' });
+  }, [cancel, state.triggeredPOIs, state.visitedPOIs]);
 
   useEffect(() => {
     if (
@@ -105,6 +120,8 @@ export default function useUpcomingWaypointPreview(position) {
     speak(nextWaypoint.preview.en, {
       audioSrc: buildPreviewAudioSrc(nextWaypoint.id),
       ambienceSrc: nextWaypoint.soundscape?.en,
+      kind: 'preview',
+      key: nextWaypoint.id,
     });
   }, [benchmarkSpeedMetersPerSecond, cumulativeRouteDistances, geometry, isSupported, poiProgress, position, speak, state.activePOI, state.externalNavigationMode, state.hasRouteIntroPlayed, state.isPaused, state.needsWelcomeBackNarration, state.screen, state.systemNarrationPlaying, state.triggeredPOIs, state.visitedPOIs, state.volumeOn]);
 }

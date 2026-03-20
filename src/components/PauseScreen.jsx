@@ -33,6 +33,9 @@ export default function PauseScreen() {
     speak(text, {
       audioSrc: lastVisitedPOI.audio?.en,
       ambienceSrc: lastVisitedPOI.soundscape?.en,
+      interrupt: true,
+      kind: 'replay',
+      key: lastVisitedPOI.id,
     });
   };
 

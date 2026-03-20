@@ -3,6 +3,7 @@ import { useEffect } from 'react';
 import PreTour from './components/PreTour';
 import Navigation from './components/Navigation';
 import TourComplete from './components/TourComplete';
+import useAssetPreload from './hooks/useAssetPreload';
 import useTTS from './hooks/useTTS';
 import useScreenWakeLock from './hooks/useScreenWakeLock';
 
@@ -60,27 +61,45 @@ function ScreenWakeLockBoundary() {
   return null;
 }
 
-function TourRouter() {
+function TourRouter({ assetPreload }) {
   const { state } = useTour();
 
   switch (state.screen) {
     case 'pre-tour':
-      return <PreTour />;
+      return <PreTour assetPreload={assetPreload} />;
     case 'active':
-      return <Navigation />;
+      return <Navigation assetPreload={assetPreload} />;
     case 'complete':
       return <TourComplete />;
     default:
-      return <PreTour />;
+      return <PreTour assetPreload={assetPreload} />;
   }
+}
+
+function AppShell() {
+  const { state } = useTour();
+  const assetPreload = useAssetPreload();
+  const { startPreloading } = assetPreload;
+
+  useEffect(() => {
+    if (state.screen === 'active') {
+      void startPreloading();
+    }
+  }, [startPreloading, state.screen]);
+
+  return (
+    <>
+      <AudioPrimingBoundary />
+      <ScreenWakeLockBoundary />
+      <TourRouter assetPreload={assetPreload} />
+    </>
+  );
 }
 
 export default function App() {
   return (
     <TourProvider>
-      <AudioPrimingBoundary />
-      <ScreenWakeLockBoundary />
-      <TourRouter />
+      <AppShell />
     </TourProvider>
   );
 }

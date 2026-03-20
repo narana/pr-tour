@@ -17,6 +17,20 @@ const sharedNarrationAudio = createSharedAudio();
 const sharedAmbienceAudio = createSharedAudio();
 let sharedAudioUnlocked = false;
 let sharedAudioUnlockPromise = null;
+const sharedPlaybackState = {
+  queue: [],
+  currentRequest: null,
+  pendingTimerId: null,
+  nextRequestId: 1,
+};
+
+function matchesRequest(request, matcher = {}) {
+  if (!request) return false;
+  if (matcher.requestId != null && request.requestId !== matcher.requestId) return false;
+  if (matcher.kind && request.kind !== matcher.kind) return false;
+  if (matcher.key && request.key !== matcher.key) return false;
+  return true;
+}
 
 function resolveMediaUrl(src) {
   if (!src) return src;
@@ -41,7 +55,6 @@ export default function useTTS() {
   const { state } = useTour();
   const audioRef = useRef(sharedNarrationAudio);
   const ambienceRef = useRef(sharedAmbienceAudio);
-  const pendingPlaybackTimerRef = useRef(null);
   const isSupportedRef = useRef(Boolean(audioRef.current));
 
   const stopAmbience = useCallback(() => {
@@ -55,11 +68,100 @@ export default function useTTS() {
   }, []);
 
   const clearPendingPlayback = useCallback(() => {
-    if (pendingPlaybackTimerRef.current) {
-      window.clearTimeout(pendingPlaybackTimerRef.current);
-      pendingPlaybackTimerRef.current = null;
+    if (sharedPlaybackState.pendingTimerId) {
+      window.clearTimeout(sharedPlaybackState.pendingTimerId);
+      sharedPlaybackState.pendingTimerId = null;
     }
   }, []);
+
+  const finalizeRequest = useCallback((matcher, { invokeOnEnd = true } = {}) => {
+    const currentRequest = sharedPlaybackState.currentRequest;
+    if (!currentRequest || (matcher && !matchesRequest(currentRequest, matcher))) {
+      return null;
+    }
+
+    clearPendingPlayback();
+
+    if (audioRef.current) {
+      audioRef.current.pause();
+      audioRef.current.currentTime = 0;
+      audioRef.current.onended = null;
+      audioRef.current.onerror = null;
+    }
+
+    stopAmbience();
+    sharedPlaybackState.currentRequest = null;
+
+    if (invokeOnEnd) {
+      currentRequest.onEnd?.();
+    }
+
+    return currentRequest;
+  }, [clearPendingPlayback, stopAmbience]);
+
+  const startAmbience = useCallback((src, volume = 0.16) => {
+    if (!src || !ambienceRef.current) return;
+
+    ambienceRef.current.src = resolveMediaUrl(src);
+    ambienceRef.current.volume = volume;
+    ambienceRef.current.playsInline = true;
+    ambienceRef.current.loop = true;
+    ambienceRef.current.currentTime = 0;
+    ambienceRef.current.play().catch(() => {});
+  }, []);
+
+  const pumpQueue = useCallback(() => {
+    if (
+      !audioRef.current
+      || sharedPlaybackState.currentRequest
+      || sharedPlaybackState.pendingTimerId
+      || sharedPlaybackState.queue.length === 0
+    ) {
+      return;
+    }
+
+    const nextRequest = sharedPlaybackState.queue.shift();
+    sharedPlaybackState.currentRequest = nextRequest;
+
+    const completeCurrentRequest = () => {
+      const completedRequest = finalizeRequest({ requestId: nextRequest.requestId });
+      if (completedRequest) {
+        pumpQueue();
+      }
+    };
+
+    const startAudioPlayback = () => {
+      if (!matchesRequest(sharedPlaybackState.currentRequest, { requestId: nextRequest.requestId })) {
+        return;
+      }
+
+      nextRequest.onStart?.();
+
+      if (nextRequest.ambienceSrc) {
+        startAmbience(nextRequest.ambienceSrc, nextRequest.ambienceVolume);
+      }
+
+      audioRef.current.src = resolveMediaUrl(nextRequest.audioSrc);
+      audioRef.current.preload = 'auto';
+      audioRef.current.playsInline = true;
+      audioRef.current.playbackRate = 1;
+      audioRef.current.onended = completeCurrentRequest;
+      audioRef.current.onerror = completeCurrentRequest;
+      audioRef.current.play().catch(() => {
+        completeCurrentRequest();
+      });
+    };
+
+    if (nextRequest.leadInMs > 0) {
+      sharedPlaybackState.pendingTimerId = window.setTimeout(() => {
+        sharedPlaybackState.pendingTimerId = null;
+        startAudioPlayback();
+      }, nextRequest.leadInMs);
+      return;
+    }
+
+    startAudioPlayback();
+  }, [finalizeRequest, startAmbience]);
 
   const primePlayback = useCallback(async () => {
     if (!audioRef.current) return false;
@@ -99,87 +201,89 @@ export default function useTTS() {
     return sharedAudioUnlockPromise;
   }, []);
 
-  const startAmbience = useCallback((src, volume = 0.16) => {
-    if (!src || !ambienceRef.current) return;
-
-    ambienceRef.current.src = resolveMediaUrl(src);
-    ambienceRef.current.volume = volume;
-    ambienceRef.current.playsInline = true;
-    ambienceRef.current.loop = true;
-    ambienceRef.current.currentTime = 0;
-    ambienceRef.current.play().catch(() => {});
-  }, []);
-
   const stop = useCallback(() => {
+    sharedPlaybackState.queue = [];
     clearPendingPlayback();
+    const finalizedRequest = finalizeRequest(null);
 
-    if (audioRef.current) {
-      audioRef.current.pause();
-      audioRef.current.currentTime = 0;
-      audioRef.current.onended = null;
-      audioRef.current.onerror = null;
+    if (!finalizedRequest) {
+      if (audioRef.current) {
+        audioRef.current.pause();
+        audioRef.current.currentTime = 0;
+        audioRef.current.onended = null;
+        audioRef.current.onerror = null;
+      }
+
+      stopAmbience();
     }
+  }, [clearPendingPlayback, finalizeRequest, stopAmbience]);
 
-    stopAmbience();
-  }, [clearPendingPlayback, stopAmbience]);
+  const cancel = useCallback((matcher) => {
+    if (!matcher) return;
 
-  // Cancel speech on unmount
-  useEffect(() => {
-    return () => {
-      stop();
-    };
-  }, [stop]);
+    sharedPlaybackState.queue = sharedPlaybackState.queue.filter((request) => !matchesRequest(request, matcher));
+
+    const canceledCurrentRequest = finalizeRequest(matcher);
+    if (canceledCurrentRequest) {
+      pumpQueue();
+    }
+  }, [finalizeRequest, pumpQueue]);
 
   const speak = useCallback((text, {
     audioSrc,
     onEnd,
+    onStart,
     ambienceSrc,
     ambienceVolume = 0.16,
     leadInMs,
+    interrupt = false,
+    kind = 'generic',
+    key,
   } = {}) => {
     if (!isSupportedRef.current || !text || !audioSrc) return;
 
     const resolvedLeadInMs = leadInMs ?? (state.externalNavigationMode ? EXTERNAL_NAVIGATION_AUDIO_LEAD_IN_MS : 0);
 
-    stop();
-
-    const handlePlaybackComplete = () => {
-      stopAmbience();
-      onEnd?.();
+    const queueKey = key || audioSrc;
+    const request = {
+      requestId: sharedPlaybackState.nextRequestId,
+      text,
+      audioSrc,
+      onEnd,
+      onStart,
+      ambienceSrc,
+      ambienceVolume,
+      leadInMs: resolvedLeadInMs,
+      kind,
+      key: queueKey,
     };
 
-    const startAudioPlayback = () => {
-      if (ambienceSrc) {
-        startAmbience(ambienceSrc, ambienceVolume);
-      }
-      audioRef.current.src = resolveMediaUrl(audioSrc);
-      audioRef.current.preload = 'auto';
-      audioRef.current.playsInline = true;
-      audioRef.current.playbackRate = 1;
-      audioRef.current.onended = handlePlaybackComplete;
-      audioRef.current.onerror = handlePlaybackComplete;
+    sharedPlaybackState.nextRequestId += 1;
 
-      audioRef.current.play().catch(() => {
-        handlePlaybackComplete();
-      });
-    };
-
-    if (resolvedLeadInMs > 0) {
-      pendingPlaybackTimerRef.current = window.setTimeout(() => {
-        pendingPlaybackTimerRef.current = null;
-        startAudioPlayback();
-      }, resolvedLeadInMs);
+    if (interrupt) {
+      sharedPlaybackState.queue = [];
+      finalizeRequest(null);
     } else {
-      startAudioPlayback();
+      sharedPlaybackState.queue = sharedPlaybackState.queue.filter((queuedRequest) => {
+        return !(queuedRequest.kind === request.kind && queuedRequest.key === request.key);
+      });
+
+      if (matchesRequest(sharedPlaybackState.currentRequest, { kind: request.kind, key: request.key })) {
+        return request.requestId;
+      }
     }
-  }, [startAmbience, state.externalNavigationMode, stop, stopAmbience]);
+
+    sharedPlaybackState.queue.push(request);
+    pumpQueue();
+    return request.requestId;
+  }, [finalizeRequest, pumpQueue, state.externalNavigationMode]);
 
   const isSpeaking = useCallback(() => {
     if (!isSupportedRef.current) return false;
 
     const audioPlaying = Boolean(audioRef.current && !audioRef.current.paused && !audioRef.current.ended);
-    return Boolean(pendingPlaybackTimerRef.current) || audioPlaying;
+    return Boolean(sharedPlaybackState.pendingTimerId) || audioPlaying || Boolean(sharedPlaybackState.currentRequest) || sharedPlaybackState.queue.length > 0;
   }, []);
 
-  return { speak, stop, isSpeaking, isSupported: isSupportedRef.current, primePlayback };
+  return { speak, stop, cancel, isSpeaking, isSupported: isSupportedRef.current, primePlayback };
 }
